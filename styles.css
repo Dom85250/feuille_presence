@@ -5,8 +5,9 @@ body {
   color: white;
 }
 
-h1 {
+h1, h2 {
   text-align: center;
+  color: white;
 }
 
 form {
@@ -19,10 +20,18 @@ label {
   margin-top: 10px;
 }
 
-input, canvas, button {
+input, canvas, button, select {
   width: 100%;
   margin-top: 5px;
-  color: black; /* Pour que le texte dans les champs reste lisible */
+  box-sizing: border-box;
+}
+
+input, canvas, select {
+  background-color: white;
+  color: black;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
 }
 
 button {
@@ -30,9 +39,29 @@ button {
   background-color: #4CAF50;
   color: white;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 button:hover {
   background-color: #45a049;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: white;
+  color: black;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background-color: #4CAF50;
+  color: white;
 }
