@@ -48,8 +48,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         <td>${stagiaire['Nom']}</td>
         <td>${stagiaire['Prénom']}</td>
         <td>${stagiaire['Email']}</td>
-        <td>${stagiaire['Téléphone']}</td>
-        <td>${stagiaire['Adresse']}</td>
         <td><input type="checkbox" class="presence-checkbox" ${stagiaire['Présent'] === 'Oui' ? 'checked' : ''} /></td>
         <td>${stagiaire['Signature stagiaire']}</td>
         <td>${stagiaire['Signature formateur']}</td>
