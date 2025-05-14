@@ -1,4 +1,3 @@
-// === Import Excel, remplissage des infos et affichage des stagiaires ===
 document.getElementById('excelFile').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -11,9 +10,9 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    if (rows.length < 2) return;
+    if (rows.length < 4) return;
 
-    // === Remplir les champs d'information (ligne 1)
+    // === Remplir les champs d'information (ligne 2)
     const info = rows[1];
     document.getElementById('centre').value = info[0] || '';
     document.getElementById('formation').value = info[1] || '';
@@ -22,18 +21,24 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     document.getElementById('adresse').value = info[4] || '';
     document.getElementById('formateur').value = info[5] || '';
 
-    // === Extraire les stagiaires à partir de la ligne 2
-    const headers = rows[2];
-    const stagiaires = rows.slice(3);
+    // === Extraire les stagiaires à partir de la ligne 4
+    const headers = rows[3];
+    const stagiaires = rows.slice(4);
 
-    const dateIndex = headers.indexOf('Date');
-    const debutIndex = headers.indexOf('Heure de début');
-    const finIndex = headers.indexOf('Heure de fin');
+    const dateIndex = headers.findIndex(h => h?.toLowerCase().includes("date"));
+    const debutIndex = headers.findIndex(h => h?.toLowerCase().includes("arrivée"));
+    const finIndex = headers.findIndex(h => h?.toLowerCase().includes("départ"));
 
-    if (stagiaires.length > 0 && dateIndex !== -1 && debutIndex !== -1 && finIndex !== -1) {
-      document.getElementById('date').value = formatDate(stagiaires[0][dateIndex]);
-      document.getElementById('arrival').value = stagiaires[0][debutIndex];
-      document.getElementById('departure').value = stagiaires[0][finIndex];
+    if (stagiaires.length > 0) {
+      if (dateIndex !== -1 && stagiaires[0][dateIndex]) {
+        document.getElementById('date').value = formatDate(stagiaires[0][dateIndex]);
+      }
+      if (debutIndex !== -1 && stagiaires[0][debutIndex]) {
+        document.getElementById('arrival').value = stagiaires[0][debutIndex];
+      }
+      if (finIndex !== -1 && stagiaires[0][finIndex]) {
+        document.getElementById('departure').value = stagiaires[0][finIndex];
+      }
     }
 
     document.getElementById('nbStagiaires').value = stagiaires.length;
@@ -42,9 +47,9 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     tbody.innerHTML = '';
 
     stagiaires.forEach(row => {
-      const nom = row[headers.indexOf('Nom')] || '';
-      const prenom = row[headers.indexOf('Prénom')] || '';
-      const email = row[headers.indexOf('Email')] || '';
+      const nom = row[headers.findIndex(h => h?.toLowerCase().includes("nom"))] || '';
+      const prenom = row[headers.findIndex(h => h?.toLowerCase().includes("prénom"))] || '';
+      const email = row[headers.findIndex(h => h?.toLowerCase().includes("email"))] || '';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -107,7 +112,7 @@ document.getElementById('exportPDF').addEventListener('click', function () {
   doc.save("feuille_presence.pdf");
 });
 
-// === Gestion du canvas de signature ===
+// === Signature canvas ===
 const canvas = document.getElementById('signature-pad');
 const ctx = canvas.getContext('2d');
 let drawing = false;
@@ -128,12 +133,10 @@ function draw(e) {
   ctx.moveTo(e.offsetX, e.offsetY);
 }
 
-// === Effacer la signature ===
 document.getElementById('clear-signature').addEventListener('click', () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
-// === Soumission du formulaire manuel ===
 document.getElementById('attendance-form').addEventListener('submit', function(e) {
   e.preventDefault();
   alert("Formulaire soumis avec succès !");
