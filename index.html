@@ -3,34 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Feuille de présence</title>
+  <title>Feuille de Présence</title>
+  <link rel="stylesheet" href="feuille_presence_style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <h1>Feuille de Présence</h1>
 
-  <h1>Feuille de présence</h1>
+  <form>
+    <label>Importer un fichier Excel :
+      <input type="file" id="excelFile" accept=".xlsx, .xls" />
+    </label>
+    <label>Centre de formation : <input type="text" id="centre" /></label>
+    <label>Nom de la formation : <input type="text" id="formation" /></label>
+    <label>Intitulé : <input type="text" id="intitule" /></label>
+    <label>Entreprise cliente : <input type="text" id="entreprise" /></label>
+    <label>Adresse du lieu de formation : <input type="text" id="adresse" /></label>
+    <label>Nom du formateur : <input type="text" id="formateur" /></label>
+    <label>Date : <input type="date" id="date" /></label>
+    <label>Heure de début : <input type="time" id="arrival" /></label>
+    <label>Heure de fin : <input type="time" id="departure" /></label>
+    <label>Nombre de stagiaires : <input type="number" id="nbStagiaires" readonly /></label>
 
-  <input type="file" id="excelFile" />
-  <br />
-
-  <label>Centre de formation : <input type="text" id="centre" /></label><br />
-  <label>Nom de la formation : <input type="text" id="formation" /></label><br />
-  <label>Intitulé : <input type="text" id="intitule" /></label><br />
-  <label>Entreprise cliente : <input type="text" id="entreprise" /></label><br />
-  <label>Adresse : <input type="text" id="adresse" /></label><br />
-  <label>Nom du formateur : <input type="text" id="formateur" /></label><br />
-  <label>Date : <input type="date" id="date" /></label><br />
-  <label>Heure d'arrivée : <input type="time" id="arrival" /></label><br />
-  <label>Heure de départ : <input type="time" id="departure" /></label><br />
-  <label>Nombre de stagiaires : <input type="number" id="nbStagiaires" readonly /></label><br />
-
-  <button id="ajouterStagiaire">Ajouter un stagiaire</button>
-  <button id="signAllBtn">Faire signer tous les stagiaires</button>
-  <button id="signTrainerBtn">Faire signer le formateur</button>
-  <button id="exportPDF">Exporter en PDF</button>
+    <button type="button" id="ajouterStagiaire">Ajouter un stagiaire</button>
+    <button type="button" id="exportPDF">Exporter en PDF</button>
+    <button type="button" id="signAllBtn">Faire signer tous les stagiaires présents</button>
+    <button type="button" id="formateurSignBtn" disabled>Signature du formateur</button>
+  </form>
 
   <table id="stagiairesTable">
     <thead>
@@ -41,43 +42,22 @@
         <th>Présent</th>
         <th>Signature stagiaire</th>
         <th>Signature formateur</th>
-        <th>Action</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <!-- Signature du formateur -->
-  <div style="margin: 20px auto; width: 95%; text-align: left;">
-    <label>Signature du formateur :</label>
-    <div id="trainerSignatureDisplay" style="background:#fff; padding:10px; border:1px solid #ccc; min-height:100px;"></div>
-  </div>
-
-  <!-- Modal de signature stagiaire -->
-  <div id="signatureModal">
-    <div id="signatureModalContent">
-      <h3>Signature de <span id="stagiaireName"></span></h3>
-      <canvas id="signatureCanvas" width="300" height="150"></canvas><br />
+  <div id="signatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; border-radius:10px; text-align:center;">
+      <h2>Signature de <span id="stagiaireName"></span></h2>
+      <canvas id="signatureCanvas" width="400" height="200"></canvas><br />
       <button id="clearSignature">Effacer</button>
       <button id="saveSignature">Enregistrer</button>
-      <button id="sendEmailSignature">Envoyer par email</button>
-      <button onclick="closeModal()">Fermer</button>
+      <button onclick="document.getElementById('signatureModal').style.display='none'">Fermer</button>
     </div>
   </div>
 
-  <!-- Modal de signature formateur -->
-  <div id="trainerSignatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
-    <div style="background:white; padding:20px; border-radius:8px; text-align:center; color:#000;">
-      <h3>Signature du formateur</h3>
-      <canvas id="trainerSignatureCanvas" width="300" height="150" style="border:2px solid #000; background:#fff;"></canvas><br />
-      <button id="clearTrainerSignature">Effacer</button>
-      <button id="saveTrainerSignature">Enregistrer</button>
-      <button onclick="document.getElementById('trainerSignatureModal').style.display='none'">Fermer</button>
-    </div>
-  </div>
-
-  <!-- Script principal -->
-  <script src="script.js"></script>
-
+  <script src="feuille_presence_script.js"></script>
 </body>
 </html>
