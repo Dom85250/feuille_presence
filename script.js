@@ -13,7 +13,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     // Lecture des informations sur la formation (lignes 1 à 9)
     const infoMap = {};
     for (let i = 0; i < 9; i++) {
-      const key = rows[i]?.[0];
+      key = rows[i]?.[0];
       const value = rows[i]?.[1];
       if (key) infoMap[key.trim()] = value;
     }
@@ -30,7 +30,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
     // Lecture des stagiaires à partir de la ligne 12
     const headers = rows[11];
-    const stagiaires = rows.slice(12);
+    const stagiaires = rows.slice(12).filter(row => row.length > 0);
 
     document.getElementById('nbStagiaires').value = stagiaires.length;
 
@@ -38,22 +38,21 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     tbody.innerHTML = '';
 
     stagiaires.forEach(row => {
-      const nom = row[headers.indexOf('Nom')] || '';
-      const prenom = row[headers.indexOf('Prénom')] || '';
-      const email = row[headers.indexOf('Email')] || '';
-      const tel = row[headers.indexOf('Téléphone')] || '';
-      const adresse = row[headers.indexOf('Adresse')] || '';
+      const stagiaire = {};
+      headers.forEach((header, i) => {
+        stagiaire[header] = row[i] || '';
+      });
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${nom}</td>
-        <td>${prenom}</td>
-        <td>${email}</td>
-        <td>${tel}</td>
-        <td>${adresse}</td>
-        <td><input type="checkbox" class="presence-checkbox" /></td>
-        <td></td>
-        <td></td>
+        <td>${stagiaire['Nom']}</td>
+        <td>${stagiaire['Prénom']}</td>
+        <td>${stagiaire['Email']}</td>
+        <td>${stagiaire['Téléphone']}</td>
+        <td>${stagiaire['Adresse']}</td>
+        <td><input type="checkbox" class="presence-checkbox" ${stagiaire['Présent'] === 'Oui' ? 'checked' : ''} /></td>
+        <td>${stagiaire['Signature stagiaire']}</td>
+        <td>${stagiaire['Signature formateur']}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -68,6 +67,38 @@ function formatDate(excelDate) {
   return date.toISOString().split('T')[0];
 }
 
+// ➕ Ajout manuel d’un stagiaire
+document.getElementById('ajouterStagiaire').addEventListener('click', () => {
+  const nom = prompt("Nom du stagiaire :");
+  const prenom = prompt("Prénom du stagiaire :");
+  const email = prompt("Email :");
+  const tel = prompt("Téléphone :");
+  const adresse = prompt("Adresse :");
+
+  if (!nom || !prenom || !email || !tel || !adresse) {
+    alert("Tous les champs sont obligatoires.");
+    return;
+  }
+
+  const tbody = document.querySelector('#stagiairesTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${nom}</td>
+    <td>${prenom}</td>
+    <td>${email}</td>
+    <td>${tel}</td>
+    <td>${adresse}</td>
+    <td><input type="checkbox" class="presence-checkbox" /></td>
+    <td></td>
+    <td></td>
+  `;
+  tbody.appendChild(tr);
+
+  const nbStagiairesInput = document.getElementById('nbStagiaires');
+  nbStagiairesInput.value = parseInt(nbStagiairesInput.value || 0) + 1;
+});
+
+// 📄 Export PDF
 document.getElementById('exportPDF').addEventListener('click', function () {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
