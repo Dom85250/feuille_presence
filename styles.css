@@ -32,13 +32,15 @@ input, button, canvas {
 }
 
 button {
-  background-color: #69A3B8;
-  color: white;
-  cursor: pointer;
+  background-color: rgb(240, 219, 0);
+  color: #222;
+  cursor: pointer;
 }
 
+
 button:hover {
-  background-color: #578A9E;
+  background-color: #d1c000;
+
 }
 
 .presence-checkbox:checked {
@@ -51,16 +53,17 @@ table {
   border-collapse: collapse;
 }
 
+
 th, td {
-  padding: 10px;
-  border: 1px solid #69A3B8;
-  color: #f0f0f0;
+  padding: 10px;
+  border: 1px solid rgb(240, 219, 0);
 }
 
 thead {
-  background-color: rgb(240, 219, 0); /* Jaune vif */
-  color: #222; /* Texte foncé pour contraste */
+  background-color: rgb(240, 219, 0);
+  color: #222;
 }
+
 
 tbody tr:nth-child(even) {
   background-color: #555;
