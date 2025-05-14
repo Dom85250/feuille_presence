@@ -209,3 +209,4 @@ function updateFormateurButtonState() {
 
 function closeModal() {
   document.getElementById('signatureModal').style.display = 'none';
+}
