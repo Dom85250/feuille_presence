@@ -32,16 +32,19 @@ input, button, canvas {
 }
 
 button {
-  background-color: rgb(240, 219, 0);
-  color: #222;
-  cursor: pointer;
+  background-color: rgb(240, 219, 0);
+  color: #222;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
 }
-
 
 button:hover {
-  background-color: #d1c000;
-
+  background-color: #d1c000;
 }
+
 
 .presence-checkbox:checked {
   accent-color: rgb(240, 219, 0); /* Jaune vif */
