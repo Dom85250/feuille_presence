@@ -17,16 +17,15 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       if (key) infoMap[key.trim()] = value;
     }
 
-   document.getElementById('centre').value = infoMap['Centre de formation'] || '';
-document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
-document.getElementById('intitule').value = infoMap['Intitulé de la formation'] || '';
-document.getElementById('entreprise').value = infoMap["Entreprise 1234 Inc."] || infoMap["Entreprise cliente"] || '';
-document.getElementById('adresse').value = infoMap["Adresse de l'entreprise cliente"] || '';
-document.getElementById('formateur').value = infoMap['Ville John Doe'] || infoMap['Nom du formateur'] || '';
-document.getElementById('date').value = formatDate(infoMap['2025-09-16'] || infoMap['Date']);
-document.getElementById('arrival').value = infoMap["9H00 (Heure de début)"] || infoMap['Heure de début'] || '';
-document.getElementById('departure').value = infoMap["12H30 (Heure de fin)"] || infoMap['Heure de fin'] || '';
-
+    document.getElementById('centre').value = infoMap['Centre de formation'] || '';
+    document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
+    document.getElementById('intitule').value = infoMap['Intitulé de la formation'] || '';
+    document.getElementById('entreprise').value = infoMap["Entreprise 1234 Inc."] || infoMap["Entreprise cliente"] || '';
+    document.getElementById('adresse').value = infoMap["Adresse de l'entreprise cliente"] || '';
+    document.getElementById('formateur').value = infoMap['Ville John Doe'] || infoMap['Nom du formateur'] || '';
+    document.getElementById('date').value = formatDate(infoMap['2025-09-16'] || infoMap['Date']);
+    document.getElementById('arrival').value = infoMap["9H00 (Heure de début)"] || infoMap['Heure de début'] || '';
+    document.getElementById('departure').value = infoMap["12H30 (Heure de fin)"] || infoMap['Heure de fin'] || '';
 
     const headers = rows[11];
     const stagiaires = rows.slice(12).filter(row => row.length > 0);
@@ -66,38 +65,71 @@ function formatDate(excelDate) {
   const date = new Date((excelDate - 25569) * 86400 * 1000);
   return date.toISOString().split('T')[0];
 }
+let currentRow = null;
 
-document.getElementById('ajouterStagiaire').addEventListener('click', () => {
-  const nom = prompt("Nom du stagiaire :");
-  const prenom = prompt("Prénom du stagiaire :");
-  const email = prompt("Email :");
-  const tel = prompt("Téléphone :");
-  const adresse = prompt("Adresse :");
+function attachSignatureButtons() {
+  document.querySelectorAll('.sign-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRow = btn.closest('tr');
+      const nom = currentRow.children[0].textContent;
+      const prenom = currentRow.children[1].textContent;
+      document.getElementById('stagiaireName').textContent = `${prenom} ${nom}`;
+      document.getElementById('signatureModal').style.display = 'flex';
+      clearCanvas();
+    });
+  });
 
-  if (!nom || !prenom || !email || !tel || !adresse) {
-    alert("Tous les champs sont obligatoires.");
-    return;
-  }
+  document.querySelectorAll('.email-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const email = btn.closest('tr').children[2].textContent;
+      alert(`Un lien de signature serait envoyé à : ${email} (fonctionnalité à intégrer avec EmailJS)`);
+    });
+  });
 
-  const tbody = document.querySelector('#stagiairesTable tbody');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>${nom}</td>
-    <td>${prenom}</td>
-    <td>${email}</td>
-    <td><input type="checkbox" class="presence-checkbox" /></td>
-    <td class="signature-stagiaire"></td>
-    <td></td>
-    <td><button class="sign-btn">Signer en présentiel</button><button class="email-btn">Envoyer par mail</button></td>
-  `;
-  tbody.appendChild(tr);
+  updateFormateurButtonState();
+}
 
-  document.getElementById('nbStagiaires').value =
-    parseInt(document.getElementById('nbStagiaires').value || 0) + 1;
+function updateFormateurButtonState() {
+  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
+  const allSigned = Array.from(rows).every(row => {
+    const present = row.querySelector('.presence-checkbox')?.checked;
+    const signature = row.querySelector('.signature-stagiaire')?.innerHTML.trim();
+    return !present || (signature && signature !== '');
+  });
 
-  attachSignatureButtons();
+  document.getElementById('formateurSignBtn').disabled = !allSigned;
+}
+
+document.getElementById('saveSignature').addEventListener('click', () => {
+  const dataURL = canvas.toDataURL();
+  const cell = currentRow.querySelector('.signature-stagiaire');
+  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+  closeModal();
+  updateFormateurButtonState();
 });
 
+document.getElementById('formateurSignBtn').addEventListener('click', () => {
+  document.getElementById('formateurSignatureModal').style.display = 'flex';
+  clearCanvas();
+});
+
+document.getElementById('saveFormateurSignature').addEventListener('click', () => {
+  const dataURL = canvas.toDataURL();
+  const cell = document.getElementById('formateurSignature');
+  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+  closeModal();
+});
+
+function clearCanvas() {
+  const canvas = document.getElementById('signatureCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function closeModal() {
+  document.getElementById('signatureModal').style.display = 'none';
+  document.getElementById('formateurSignatureModal').style.display = 'none';
+}
 document.getElementById('exportPDF').addEventListener('click', function () {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -138,7 +170,7 @@ document.getElementById('exportPDF').addEventListener('click', function () {
     const prenom = cells[1].textContent;
     const email = cells[2].textContent;
     const present = cells[3].querySelector('input')?.checked ? 'Oui' : 'Non';
-    const signatureStagiaire = cells[4].textContent;
+    const signatureStagiaire = cells[4].querySelector('img')?.src || '';
     const signatureFormateur = cells[5].textContent;
 
     rows.push([nom, prenom, email, present, signatureStagiaire, signatureFormateur]);
@@ -147,66 +179,27 @@ document.getElementById('exportPDF').addEventListener('click', function () {
   doc.autoTable({
     startY: y + 5,
     head: [['Nom', 'Prénom', 'Email', 'Présent', 'Signature stagiaire', 'Signature formateur']],
-    body: rows
-  });
-
-  doc.save('feuille_de_presence.pdf');
-});
-
-let currentRow = null;
-
-function attachSignatureButtons() {
-  document.querySelectorAll('.sign-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentRow = btn.closest('tr');
-      const nom = currentRow.children[0].textContent;
-      const prenom = currentRow.children[1].textContent;
-      document.getElementById('stagiaireName').textContent = `${prenom} ${nom}`;
-      document.getElementById('signatureModal').style.display = 'flex';
-      clearCanvas();
-    });
-  });
-
-  document.querySelectorAll('.email-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const email = btn.closest('tr').children[2].textContent;
-      alert(`Un lien de signature serait envoyé à : ${email} (fonctionnalité à intégrer avec EmailJS)`);
-    });
-  });
-
-  updateFormateurButtonState();
-}
-
-document.getElementById('saveSignature').addEventListener('click', () => {
-  const dataURL = canvas.toDataURL();
-  const cell = currentRow.querySelector('.signature-stagiaire');
-  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
-  closeModal();
-  updateFormateurButtonState();
-});
-
-document.getElementById('signAllBtn').addEventListener('click', () => {
-  document.querySelectorAll('#stagiairesTable tbody tr').forEach(row => {
-    const present = row.querySelector('.presence-checkbox')?.checked;
-    const signatureCell = row.querySelector('.signature-stagiaire');
-    if (present && signatureCell.innerHTML.trim() === '') {
-      signatureCell.innerHTML = `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..." alt="Auto-signature" style="max-width:100px;" />`;
+    body: rows,
+    didDrawCell: function (data) {
+      if (data.column.index === 4 && data.cell.raw) {
+        const img = new Image();
+        img.src = data.cell.raw;
+        doc.addImage(img, 'PNG', data.cell.x + 2, data.cell.y + 2, 20, 10);
+      }
     }
   });
-  updateFormateurButtonState();
+
+  const formateurSignature = document.getElementById('formateurSignature').querySelector('img')?.src || '';
+  if (formateurSignature) {
+    const img = new Image();
+    img.onload = function () {
+      const finalY = doc.lastAutoTable.finalY || y + 10;
+      doc.text("Signature du formateur :", 10, finalY + 10);
+      doc.addImage(img, 'PNG', 10, finalY + 15, 50, 20);
+      doc.save('feuille_de_presence.pdf');
+    };
+    img.src = formateurSignature;
+  } else {
+    doc.save('feuille_de_presence.pdf');
+  }
 });
-
-function updateFormateurButtonState() {
-  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
-  const allSigned = Array.from(rows).every(row => {
-    const present = row.querySelector('.presence-checkbox')?.checked;
-    const signature = row.querySelector('.signature-stagiaire')?.innerHTML.trim();
-    return !present || (signature && signature !== '');
-  });
-
-  document.getElementById('formateurSignBtn').disabled = !allSigned;
-}
-
-function closeModal() {
-  document.getElementById('signatureModal').style.display = 'none';
-}
