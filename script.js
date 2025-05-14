@@ -10,10 +10,9 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // Lecture des informations sur la formation (lignes 1 à 9)
     const infoMap = {};
     for (let i = 0; i < 10; i++) {
-      key = rows[i]?.[0];
+      const key = rows[i]?.[0];
       const value = rows[i]?.[1];
       if (key) infoMap[key.trim()] = value;
     }
@@ -28,7 +27,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     document.getElementById('arrival').value = infoMap['Heure de début'] || '';
     document.getElementById('departure').value = infoMap['Heure de fin'] || '';
 
-    // Lecture des stagiaires à partir de la ligne 12
     const headers = rows[11];
     const stagiaires = rows.slice(12).filter(row => row.length > 0);
 
@@ -49,11 +47,14 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         <td>${stagiaire['Prénom']}</td>
         <td>${stagiaire['Email']}</td>
         <td><input type="checkbox" class="presence-checkbox" ${stagiaire['Présent'] === 'Oui' ? 'checked' : ''} /></td>
-        <td>${stagiaire['Signature stagiaire']}</td>
-        <td>${stagiaire['Signature formateur']}</td>
+        <td class="signature-stagiaire">${stagiaire['Signature stagiaire'] || ''}</td>
+        <td>${stagiaire['Signature formateur'] || ''}</td>
+        <td><button class="sign-btn">Faire signer</button></td>
       `;
       tbody.appendChild(tr);
     });
+
+    attachSignatureButtons();
   };
 
   reader.readAsArrayBuffer(file);
@@ -65,7 +66,6 @@ function formatDate(excelDate) {
   return date.toISOString().split('T')[0];
 }
 
-// ➕ Ajout manuel d’un stagiaire
 document.getElementById('ajouterStagiaire').addEventListener('click', () => {
   const nom = prompt("Nom du stagiaire :");
   const prenom = prompt("Prénom du stagiaire :");
@@ -84,19 +84,19 @@ document.getElementById('ajouterStagiaire').addEventListener('click', () => {
     <td>${nom}</td>
     <td>${prenom}</td>
     <td>${email}</td>
-    <td>${tel}</td>
-    <td>${adresse}</td>
     <td><input type="checkbox" class="presence-checkbox" /></td>
+    <td class="signature-stagiaire"></td>
     <td></td>
-    <td></td>
+    <td><button class="sign-btn">Faire signer</button></td>
   `;
   tbody.appendChild(tr);
 
-  const nbStagiairesInput = document.getElementById('nbStagiaires');
-  nbStagiairesInput.value = parseInt(nbStagiairesInput.value || 0) + 1;
+  document.getElementById('nbStagiaires').value =
+    parseInt(document.getElementById('nbStagiaires').value || 0) + 1;
+
+  attachSignatureButtons();
 });
 
-// 📄 Export PDF
 document.getElementById('exportPDF').addEventListener('click', function () {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -136,20 +136,77 @@ document.getElementById('exportPDF').addEventListener('click', function () {
     const nom = cells[0].textContent;
     const prenom = cells[1].textContent;
     const email = cells[2].textContent;
-    const tel = cells[3].textContent;
-    const adresse = cells[4].textContent;
-    const present = cells[5].querySelector('input')?.checked ? 'Oui' : 'Non';
-    const signatureStagiaire = cells[6].textContent;
-    const signatureFormateur = cells[7].textContent;
+    const present = cells[3].querySelector('input')?.checked ? 'Oui' : 'Non';
+    const signatureStagiaire = cells[4].textContent;
+    const signatureFormateur = cells[5].textContent;
 
-    rows.push([nom, prenom, email, tel, adresse, present, signatureStagiaire, signatureFormateur]);
+    rows.push([nom, prenom, email, present, signatureStagiaire, signatureFormateur]);
   });
 
   doc.autoTable({
     startY: y + 5,
-    head: [['Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Présent', 'Signature stagiaire', 'Signature formateur']],
+    head: [['Nom', 'Prénom', 'Email', 'Présent', 'Signature stagiaire', 'Signature formateur']],
     body: rows
   });
 
   doc.save('feuille_de_presence.pdf');
+});
+
+let currentRow = null;
+
+function attachSignatureButtons() {
+  document.querySelectorAll('.sign-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRow = btn.closest('tr');
+      const nom = currentRow.children[0].textContent;
+      const prenom = currentRow.children[1].textContent;
+      document.getElementById('stagiaireName').textContent = `${prenom} ${nom}`;
+      document.getElementById('signatureModal').style.display = 'flex';
+      clearCanvas();
+    });
+  });
+}
+
+function closeModal() {
+  document.getElementById('signatureModal').style.display = 'none';
+}
+
+const canvas = document.getElementById('signatureCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+
+canvas.addEventListener('mousedown', () => drawing = true);
+canvas.addEventListener('mouseup', () => {
+  drawing = false;
+  ctx.beginPath();
+});
+canvas.addEventListener('mousemove', draw);
+
+function draw(e) {
+  if (!drawing) return;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#000';
+  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
+}
+
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+document.getElementById('clearSignature').addEventListener('click', clearCanvas);
+
+document.getElementById('saveSignature').addEventListener('click', () => {
+  const dataURL = canvas.toDataURL();
+  const cell = currentRow.querySelector('.signature-stagiaire');
+  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+  closeModal();
+});
+
+document.getElementById('sendEmailSignature').addEventListener('click', () => {
+  const email = currentRow.children[2].textContent;
+  alert(`Un lien de signature serait envoyé à : ${email} (fonctionnalité à intégrer avec EmailJS)`);
 });
