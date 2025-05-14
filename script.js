@@ -1,17 +1,35 @@
-// === Import Excel et affichage des stagiaires ===
+// === Import Excel, remplissage des infos et affichage des stagiaires ===
 document.getElementById('excelFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
   const reader = new FileReader();
   reader.onload = function(e) {
     const data = new Uint8Array(e.target.result);
     const workbook = XLSX.read(data, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const json = XLSX.utils.sheet_to_json(sheet);
+
+    // === Remplissage des infos générales depuis la feuille "Infos"
+    const infosSheet = workbook.Sheets['Infos'];
+    const infos = XLSX.utils.sheet_to_json(infosSheet, { header: 1 });
+
+    if (infos.length > 1) {
+      const values = infos[1]; // Deuxième ligne (après les en-têtes)
+      document.getElementById('centre').value = values[0];
+      document.getElementById('formation').value = values[1];
+      document.getElementById('intitule').value = values[2];
+      document.getElementById('entreprise').value = values[3];
+      document.getElementById('adresse').value = values[4];
+      document.getElementById('formateur').value = values[5];
+    }
+
+    // === Lecture des stagiaires depuis la feuille "Stagiaires"
+    const stagiairesSheet = workbook.Sheets['Stagiaires'];
+    const stagiaires = XLSX.utils.sheet_to_json(stagiairesSheet);
 
     const tbody = document.querySelector('#stagiairesTable tbody');
     tbody.innerHTML = '';
 
-    json.forEach(row => {
+    stagiaires.forEach(row => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${row.Nom || ''}</td>
@@ -26,8 +44,12 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
       `;
       tbody.appendChild(tr);
     });
+
+    // Mise à jour du nombre de stagiaires
+    document.getElementById('nbStagiaires').value = stagiaires.length;
   };
-  reader.readAsArrayBuffer(e.target.files[0]);
+
+  reader.readAsArrayBuffer(file);
 });
 
 // === Export PDF ===
