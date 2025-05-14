@@ -53,18 +53,31 @@
     <tbody></tbody>
   </table>
 
+  <!-- Modal de signature stagiaire -->
   <div id="signatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
     <div style="background:#fff; padding:20px; border-radius:10px; text-align:center;">
       <h2>Signature de <span id="stagiaireName"></span></h2>
-      <canvas id="signatureCanvas" width="400" height="200"></canvas><br />
-      <button id="clearSignature">Effacer</button>
+      <canvas id="signatureCanvas" width="400" height="200" style="border:1px solid #ccc;"></canvas><br />
+      <button onclick="clearCanvas()">Effacer</button>
       <button id="saveSignature">Enregistrer</button>
-      <button onclick="document.getElementById('signatureModal').style.display='none'">Fermer</button>
+      <button onclick="closeModal()">Fermer</button>
     </div>
   </div>
 
- <link rel="stylesheet" href="styles.css">
-<script src="script.js" defer></script>
+  <!-- Modal de signature formateur -->
+  <div id="formateurSignatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; border-radius:10px; text-align:center;">
+      <h2>Signature du formateur</h2>
+      <canvas id="signatureCanvas" width="400" height="200" style="border:1px solid #ccc;"></canvas><br />
+      <button onclick="clearCanvas()">Effacer</button>
+      <button id="saveFormateurSignature">Enregistrer</button>
+      <button onclick="closeModal()">Fermer</button>
+    </div>
+  </div>
 
+  <!-- Emplacement pour afficher la signature du formateur -->
+  <div id="formateurSignature" style="margin-top:10px;"></div>
+
+  <script src="script.js" defer></script>
 </body>
 </html>
