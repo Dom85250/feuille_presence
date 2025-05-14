@@ -7,74 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-
-    input, button, select {
-      margin: 5px 0;
-      padding: 5px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #f9f9f9;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #e0e0e0;
-    }
-
-    .signature-stagiaire img {
-      max-width: 100px;
-    }
-
-    #signatureModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    #signatureModalContent {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-    }
-
-    #signatureCanvas {
-      border: 1px solid #000;
-      width: 300px;
-      height: 150px;
-    }
-
-    #signAllBtn {
-      margin: 10px 0;
-      padding: 8px 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    #signAllBtn:hover {
-      background-color: #0056b3;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
@@ -96,6 +29,7 @@
 
   <button id="ajouterStagiaire">Ajouter un stagiaire</button>
   <button id="signAllBtn">Faire signer tous les stagiaires</button>
+  <button id="signTrainerBtn">Faire signer le formateur</button>
   <button id="exportPDF">Exporter en PDF</button>
 
   <table id="stagiairesTable">
@@ -113,6 +47,13 @@
     <tbody></tbody>
   </table>
 
+  <!-- Signature du formateur -->
+  <div style="margin: 20px auto; width: 95%; text-align: left;">
+    <label>Signature du formateur :</label>
+    <div id="trainerSignatureDisplay" style="background:#fff; padding:10px; border:1px solid #ccc; min-height:100px;"></div>
+  </div>
+
+  <!-- Modal de signature stagiaire -->
   <div id="signatureModal">
     <div id="signatureModalContent">
       <h3>Signature de <span id="stagiaireName"></span></h3>
@@ -124,8 +65,19 @@
     </div>
   </div>
 
-  <!-- Ton script JS ici -->
-  <script src="ton_script.js"></script>
+  <!-- Modal de signature formateur -->
+  <div id="trainerSignatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
+    <div style="background:white; padding:20px; border-radius:8px; text-align:center; color:#000;">
+      <h3>Signature du formateur</h3>
+      <canvas id="trainerSignatureCanvas" width="300" height="150" style="border:2px solid #000; background:#fff;"></canvas><br />
+      <button id="clearTrainerSignature">Effacer</button>
+      <button id="saveTrainerSignature">Enregistrer</button>
+      <button onclick="document.getElementById('trainerSignatureModal').style.display='none'">Fermer</button>
+    </div>
+  </div>
+
+  <!-- Script principal -->
+  <script src="script.js"></script>
 
 </body>
 </html>
