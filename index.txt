@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feuille de Présence</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>Feuille de Présence</h1>
+  <form id="attendance-form">
+    <label>Nom : <input type="text" id="name" required /></label><br>
+    <label>Prénom : <input type="text" id="surname" required /></label><br>
+    <label>Date : <input type="date" id="date" required /></label><br>
+    <label>Heure d'arrivée : <input type="time" id="arrival" required /></label><br>
+    <label>Heure de départ : <input type="time" id="departure" required /></label><br>
+    <label>Signature :</label><br>
+    <canvas id="signature-pad" width="400" height="200" style="border:1px solid #000;"></canvas><br>
+    <button type="button" id="clear-signature">Effacer</button><br><br>
+    <button type="submit">Soumettre</button>
+  </form>
+  <script src="script.js"></script>
+</body>
+</html>
