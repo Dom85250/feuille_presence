@@ -17,15 +17,16 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       if (key) infoMap[key.trim()] = value;
     }
 
-    document.getElementById('centre').value = infoMap['Centre de formation'] || '';
-    document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
-    document.getElementById('intitule').value = infoMap['Intitulé'] || '';
-    document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
-    document.getElementById('adresse').value = infoMap['Adresse du lieu de formation'] || '';
-    document.getElementById('formateur').value = infoMap['Nom du formateur'] || '';
-    document.getElementById('date').value = formatDate(infoMap['Date']);
-    document.getElementById('arrival').value = infoMap['Heure de début'] || '';
-    document.getElementById('departure').value = infoMap['Heure de fin'] || '';
+   document.getElementById('centre').value = infoMap['Centre de formation'] || '';
+document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
+document.getElementById('intitule').value = infoMap['Intitulé de la formation'] || '';
+document.getElementById('entreprise').value = infoMap["Entreprise 1234 Inc."] || infoMap["Entreprise cliente"] || '';
+document.getElementById('adresse').value = infoMap["Adresse de l'entreprise cliente"] || '';
+document.getElementById('formateur').value = infoMap['Ville John Doe'] || infoMap['Nom du formateur'] || '';
+document.getElementById('date').value = formatDate(infoMap['2025-09-16'] || infoMap['Date']);
+document.getElementById('arrival').value = infoMap["9H00 (Heure de début)"] || infoMap['Heure de début'] || '';
+document.getElementById('departure').value = infoMap["12H30 (Heure de fin)"] || infoMap['Heure de fin'] || '';
+
 
     const headers = rows[11];
     const stagiaires = rows.slice(12).filter(row => row.length > 0);
