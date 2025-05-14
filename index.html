@@ -12,10 +12,26 @@
 <body>
   <h1>Feuille de Présence</h1>
 
+  <!-- Informations générales -->
+  <h2>Informations sur la formation</h2>
+  <form id="info-form">
+    <label>Centre de formation : <input type="text" id="centre" value="ABC Formation" required /></label><br>
+    <label>Nom de la formation : <input type="text" id="formation" value="Word initiation" required /></label><br>
+    <label>Intitulé : <input type="text" id="intitule" value="Word Init-Présentiel-14h-16" required /></label><br>
+    <label>Entreprise cliente : <input type="text" id="entreprise" required /></label><br>
+    <label>Adresse du lieu de formation : <input type="text" id="adresse" required /></label><br>
+    <label>Nom du formateur : <input type="text" id="formateur" required /></label><br>
+    <label>Nombre de stagiaires : <input type="number" id="nbStagiaires" min="1" required /></label><br>
+  </form>
+
+  <hr>
+
   <!-- Formulaire manuel -->
+  <h2>Ajout manuel d’un stagiaire</h2>
   <form id="attendance-form">
     <label>Nom : <input type="text" id="name" required /></label><br>
     <label>Prénom : <input type="text" id="surname" required /></label><br>
+    <label>Email : <input type="email" id="email" required /></label><br>
     <label>Date : <input type="date" id="date" required /></label><br>
     <label>Heure d'arrivée : <input type="time" id="arrival" required /></label><br>
     <label>Heure de départ : <input type="time" id="departure" required /></label><br>
@@ -32,13 +48,19 @@
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
 
   <!-- Tableau des stagiaires -->
+  <h2>Liste des stagiaires</h2>
   <table id="stagiairesTable">
     <thead>
       <tr>
         <th>Nom</th>
         <th>Prénom</th>
         <th>Email</th>
+        <th>Date</th>
+        <th>Heure de début</th>
+        <th>Heure de fin</th>
         <th>Présent</th>
+        <th>Signature stagiaire</th>
+        <th>Signature formateur</th>
       </tr>
     </thead>
     <tbody></tbody>
