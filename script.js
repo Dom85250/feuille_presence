@@ -1,14 +1,4 @@
 // === Import Excel, remplissage des infos et affichage des stagiaires ===
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('centre').value = '';
-  document.getElementById('formation').value = '';
-  document.getElementById('intitule').value = '';
-  document.getElementById('entreprise').value = '';
-  document.getElementById('adresse').value = '';
-  document.getElementById('formateur').value = '';
-  document.getElementById('nbStagiaires').value = '';
-});
-
 document.getElementById('excelFile').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -18,56 +8,71 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     const data = new Uint8Array(e.target.result);
     const workbook = XLSX.read(data, { type: 'array' });
 
-    // === Remplissage des infos générales depuis la feuille "Infos"
-    const infosSheet = workbook.Sheets['Infos'];
-    const infos = XLSX.utils.sheet_to_json(infosSheet, { header: 1 });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    if (infos.length > 1) {
-      const values = infos[1]; // Deuxième ligne (après les en-têtes)
-      document.getElementById('centre').value = values[0];
-      document.getElementById('formation').value = values[1];
-      document.getElementById('intitule').value = values[2];
-      document.getElementById('entreprise').value = values[3];
-      document.getElementById('adresse').value = values[4];
-      document.getElementById('formateur').value = values[5];
+    if (rows.length < 2) return;
+
+    // === Remplir les champs d'information (ligne 1)
+    const info = rows[1];
+    document.getElementById('centre').value = info[0] || '';
+    document.getElementById('formation').value = info[1] || '';
+    document.getElementById('intitule').value = info[2] || '';
+    document.getElementById('entreprise').value = info[3] || '';
+    document.getElementById('adresse').value = info[4] || '';
+    document.getElementById('formateur').value = info[5] || '';
+
+    // === Extraire les stagiaires à partir de la ligne 2
+    const headers = rows[2];
+    const stagiaires = rows.slice(3);
+
+    const dateIndex = headers.indexOf('Date');
+    const debutIndex = headers.indexOf('Heure de début');
+    const finIndex = headers.indexOf('Heure de fin');
+
+    if (stagiaires.length > 0 && dateIndex !== -1 && debutIndex !== -1 && finIndex !== -1) {
+      document.getElementById('date').value = formatDate(stagiaires[0][dateIndex]);
+      document.getElementById('arrival').value = stagiaires[0][debutIndex];
+      document.getElementById('departure').value = stagiaires[0][finIndex];
     }
 
-    // === Lecture des stagiaires depuis la feuille "Stagiaires"
-    const stagiairesSheet = workbook.Sheets['Stagiaires'];
-    const stagiaires = XLSX.utils.sheet_to_json(stagiairesSheet);
+    document.getElementById('nbStagiaires').value = stagiaires.length;
 
     const tbody = document.querySelector('#stagiairesTable tbody');
     tbody.innerHTML = '';
 
     stagiaires.forEach(row => {
+      const nom = row[headers.indexOf('Nom')] || '';
+      const prenom = row[headers.indexOf('Prénom')] || '';
+      const email = row[headers.indexOf('Email')] || '';
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${row.Nom || ''}</td>
-        <td>${row.Prénom || ''}</td>
-        <td>${row.Email || ''}</td>
-        <td>${row.Date || ''}</td>
-        <td>${row["Heure de début"] || ''}</td>
-        <td>${row["Heure de fin"] || ''}</td>
+        <td>${nom}</td>
+        <td>${prenom}</td>
+        <td>${email}</td>
         <td><input type="checkbox" class="presence-checkbox" /></td>
         <td></td>
         <td></td>
       `;
       tbody.appendChild(tr);
     });
-
-    // Mise à jour du nombre de stagiaires
-    document.getElementById('nbStagiaires').value = stagiaires.length;
   };
 
   reader.readAsArrayBuffer(file);
 });
+
+function formatDate(excelDate) {
+  if (typeof excelDate === 'string') return excelDate;
+  const date = new Date((excelDate - 25569) * 86400 * 1000);
+  return date.toISOString().split('T')[0];
+}
 
 // === Export PDF ===
 document.getElementById('exportPDF').addEventListener('click', function () {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Infos générales
   const centre = document.getElementById('centre').value;
   const formation = document.getElementById('formation').value;
   const intitule = document.getElementById('intitule').value;
@@ -89,15 +94,12 @@ document.getElementById('exportPDF').addEventListener('click', function () {
     const nom = cells[0].textContent;
     const prenom = cells[1].textContent;
     const email = cells[2].textContent;
-    const date = cells[3].textContent;
-    const debut = cells[4].textContent;
-    const fin = cells[5].textContent;
-    const present = cells[6].querySelector('input').checked ? "Oui" : "Non";
-    rows.push([nom, prenom, email, date, debut, fin, present, "", ""]);
+    const present = cells[3].querySelector('input').checked ? "Oui" : "Non";
+    rows.push([nom, prenom, email, present, "", ""]);
   });
 
   doc.autoTable({
-    head: [['Nom', 'Prénom', 'Email', 'Date', 'Début', 'Fin', 'Présent', 'Signature stagiaire', 'Signature formateur']],
+    head: [['Nom', 'Prénom', 'Email', 'Présent', 'Signature stagiaire', 'Signature formateur']],
     body: rows,
     startY: 60
   });
