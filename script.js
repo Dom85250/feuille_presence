@@ -12,7 +12,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
     // Lecture des informations sur la formation (lignes 1 à 9)
     const infoMap = {};
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 10; i++) {
       key = rows[i]?.[0];
       const value = rows[i]?.[1];
       if (key) infoMap[key.trim()] = value;
