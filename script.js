@@ -17,7 +17,12 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
         <td>${row.Nom || ''}</td>
         <td>${row.Prénom || ''}</td>
         <td>${row.Email || ''}</td>
+        <td>${row.Date || ''}</td>
+        <td>${row["Heure de début"] || ''}</td>
+        <td>${row["Heure de fin"] || ''}</td>
         <td><input type="checkbox" class="presence-checkbox" /></td>
+        <td></td>
+        <td></td>
       `;
       tbody.appendChild(tr);
     });
@@ -30,7 +35,21 @@ document.getElementById('exportPDF').addEventListener('click', function () {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  doc.text("Feuille de Présence", 10, 10);
+  // Infos générales
+  const centre = document.getElementById('centre').value;
+  const formation = document.getElementById('formation').value;
+  const intitule = document.getElementById('intitule').value;
+  const entreprise = document.getElementById('entreprise').value;
+  const adresse = document.getElementById('adresse').value;
+  const formateur = document.getElementById('formateur').value;
+
+  doc.setFontSize(12);
+  doc.text(`Centre : ${centre}`, 10, 10);
+  doc.text(`Formation : ${formation}`, 10, 18);
+  doc.text(`Intitulé : ${intitule}`, 10, 26);
+  doc.text(`Entreprise cliente : ${entreprise}`, 10, 34);
+  doc.text(`Adresse : ${adresse}`, 10, 42);
+  doc.text(`Formateur : ${formateur}`, 10, 50);
 
   const rows = [];
   document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
@@ -38,14 +57,17 @@ document.getElementById('exportPDF').addEventListener('click', function () {
     const nom = cells[0].textContent;
     const prenom = cells[1].textContent;
     const email = cells[2].textContent;
-    const present = cells[3].querySelector('input').checked ? "Oui" : "Non";
-    rows.push([nom, prenom, email, present]);
+    const date = cells[3].textContent;
+    const debut = cells[4].textContent;
+    const fin = cells[5].textContent;
+    const present = cells[6].querySelector('input').checked ? "Oui" : "Non";
+    rows.push([nom, prenom, email, date, debut, fin, present, "", ""]);
   });
 
   doc.autoTable({
-    head: [['Nom', 'Prénom', 'Email', 'Présent']],
+    head: [['Nom', 'Prénom', 'Email', 'Date', 'Début', 'Fin', 'Présent', 'Signature stagiaire', 'Signature formateur']],
     body: rows,
-    startY: 20
+    startY: 60
   });
 
   doc.save("feuille_presence.pdf");
@@ -77,9 +99,8 @@ document.getElementById('clear-signature').addEventListener('click', () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
-// === Soumission du formulaire ===
+// === Soumission du formulaire manuel ===
 document.getElementById('attendance-form').addEventListener('submit', function(e) {
   e.preventDefault();
   alert("Formulaire soumis avec succès !");
-  // Tu peux ici ajouter du code pour enregistrer les données ou les envoyer à un serveur
 });
