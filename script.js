@@ -1,4 +1,14 @@
 // === Import Excel, remplissage des infos et affichage des stagiaires ===
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('centre').value = '';
+  document.getElementById('formation').value = '';
+  document.getElementById('intitule').value = '';
+  document.getElementById('entreprise').value = '';
+  document.getElementById('adresse').value = '';
+  document.getElementById('formateur').value = '';
+  document.getElementById('nbStagiaires').value = '';
+});
+
 document.getElementById('excelFile').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
