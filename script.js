@@ -18,8 +18,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       if (key) infoMap[key.trim()] = value;
     }
 
-    console.log("Champs trouvés dans le fichier Excel :", infoMap);
-
     document.getElementById('centre').value = infoMap['Centre de formation'] || '';
     document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
     document.getElementById('intitule').value = infoMap['Intitulé'] || '';
@@ -43,12 +41,16 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       const nom = row[headers.indexOf('Nom')] || '';
       const prenom = row[headers.indexOf('Prénom')] || '';
       const email = row[headers.indexOf('Email')] || '';
+      const tel = row[headers.indexOf('Téléphone')] || '';
+      const adresse = row[headers.indexOf('Adresse')] || '';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${nom}</td>
         <td>${prenom}</td>
         <td>${email}</td>
+        <td>${tel}</td>
+        <td>${adresse}</td>
         <td><input type="checkbox" class="presence-checkbox" /></td>
         <td></td>
         <td></td>
@@ -58,4 +60,67 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
   };
 
   reader.readAsArrayBuffer(file);
+});
+
+function formatDate(excelDate) {
+  if (typeof excelDate === 'string') return excelDate;
+  const date = new Date((excelDate - 25569) * 86400 * 1000);
+  return date.toISOString().split('T')[0];
+}
+
+document.getElementById('exportPDF').addEventListener('click', function () {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const centre = document.getElementById('centre').value;
+  const formation = document.getElementById('formation').value;
+  const intitule = document.getElementById('intitule').value;
+  const entreprise = document.getElementById('entreprise').value;
+  const adresse = document.getElementById('adresse').value;
+  const formateur = document.getElementById('formateur').value;
+  const date = document.getElementById('date').value;
+  const arrival = document.getElementById('arrival').value;
+  const departure = document.getElementById('departure').value;
+
+  doc.setFontSize(12);
+  let y = 10;
+  const infos = [
+    `Centre de formation : ${centre}`,
+    `Nom de la formation : ${formation}`,
+    `Intitulé : ${intitule}`,
+    `Entreprise cliente : ${entreprise}`,
+    `Adresse : ${adresse}`,
+    `Nom du formateur : ${formateur}`,
+    `Date : ${date}`,
+    `Heure d'arrivée : ${arrival}`,
+    `Heure de départ : ${departure}`
+  ];
+
+  infos.forEach(info => {
+    doc.text(info, 10, y);
+    y += 8;
+  });
+
+  const rows = [];
+  document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    const nom = cells[0].textContent;
+    const prenom = cells[1].textContent;
+    const email = cells[2].textContent;
+    const tel = cells[3].textContent;
+    const adresse = cells[4].textContent;
+    const present = cells[5].querySelector('input')?.checked ? 'Oui' : 'Non';
+    const signatureStagiaire = cells[6].textContent;
+    const signatureFormateur = cells[7].textContent;
+
+    rows.push([nom, prenom, email, tel, adresse, present, signatureStagiaire, signatureFormateur]);
+  });
+
+  doc.autoTable({
+    startY: y + 5,
+    head: [['Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Présent', 'Signature stagiaire', 'Signature formateur']],
+    body: rows
+  });
+
+  doc.save('feuille_de_presence.pdf');
 });
