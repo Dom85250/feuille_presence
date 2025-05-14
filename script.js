@@ -49,7 +49,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         <td><input type="checkbox" class="presence-checkbox" ${stagiaire['Présent'] === 'Oui' ? 'checked' : ''} /></td>
         <td class="signature-stagiaire">${stagiaire['Signature stagiaire'] || ''}</td>
         <td>${stagiaire['Signature formateur'] || ''}</td>
-        <td><button class="sign-btn">Faire signer</button></td>
+        <td><button class="sign-btn">Signer en présentiel</button><button class="email-btn">Envoyer par mail</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -87,7 +87,7 @@ document.getElementById('ajouterStagiaire').addEventListener('click', () => {
     <td><input type="checkbox" class="presence-checkbox" /></td>
     <td class="signature-stagiaire"></td>
     <td></td>
-    <td><button class="sign-btn">Faire signer</button></td>
+    <td><button class="sign-btn">Signer en présentiel</button><button class="email-btn">Envoyer par mail</button></td>
   `;
   tbody.appendChild(tr);
 
@@ -97,35 +97,114 @@ document.getElementById('ajouterStagiaire').addEventListener('click', () => {
   attachSignatureButtons();
 });
 
+document.getElementById('exportPDF').addEventListener('click', function () {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const centre = document.getElementById('centre').value;
+  const formation = document.getElementById('formation').value;
+  const intitule = document.getElementById('intitule').value;
+  const entreprise = document.getElementById('entreprise').value;
+  const adresse = document.getElementById('adresse').value;
+  const formateur = document.getElementById('formateur').value;
+  const date = document.getElementById('date').value;
+  const arrival = document.getElementById('arrival').value;
+  const departure = document.getElementById('departure').value;
+
+  doc.setFontSize(12);
+  let y = 10;
+  const infos = [
+    `Centre de formation : ${centre}`,
+    `Nom de la formation : ${formation}`,
+    `Intitulé : ${intitule}`,
+    `Entreprise cliente : ${entreprise}`,
+    `Adresse : ${adresse}`,
+    `Nom du formateur : ${formateur}`,
+    `Date : ${date}`,
+    `Heure d'arrivée : ${arrival}`,
+    `Heure de départ : ${departure}`
+  ];
+
+  infos.forEach(info => {
+    doc.text(info, 10, y);
+    y += 8;
+  });
+
+  const rows = [];
+  document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    const nom = cells[0].textContent;
+    const prenom = cells[1].textContent;
+    const email = cells[2].textContent;
+    const present = cells[3].querySelector('input')?.checked ? 'Oui' : 'Non';
+    const signatureStagiaire = cells[4].textContent;
+    const signatureFormateur = cells[5].textContent;
+
+    rows.push([nom, prenom, email, present, signatureStagiaire, signatureFormateur]);
+  });
+
+  doc.autoTable({
+    startY: y + 5,
+    head: [['Nom', 'Prénom', 'Email', 'Présent', 'Signature stagiaire', 'Signature formateur']],
+    body: rows
+  });
+
+  doc.save('feuille_de_presence.pdf');
+});
+
+let currentRow = null;
+
+function attachSignatureButtons() {
+  document.querySelectorAll('.sign-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRow = btn.closest('tr');
+      const nom = currentRow.children[0].textContent;
+      const prenom = currentRow.children[1].textContent;
+      document.getElementById('stagiaireName').textContent = `${prenom} ${nom}`;
+      document.getElementById('signatureModal').style.display = 'flex';
+      clearCanvas();
+    });
+  });
+
+  document.querySelectorAll('.email-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const email = btn.closest('tr').children[2].textContent;
+      alert(`Un lien de signature serait envoyé à : ${email} (fonctionnalité à intégrer avec EmailJS)`);
+    });
+  });
+
+  updateFormateurButtonState();
+}
+
+document.getElementById('saveSignature').addEventListener('click', () => {
+  const dataURL = canvas.toDataURL();
+  const cell = currentRow.querySelector('.signature-stagiaire');
+  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+  closeModal();
+  updateFormateurButtonState();
+});
+
 document.getElementById('signAllBtn').addEventListener('click', () => {
-  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
-  rows.forEach(row => {
-    const cell = row.querySelector('.signature-stagiaire');
-    if (!cell.querySelector('img')) {
-      cell.innerHTML = `<img src="signature_par_defaut.png" alt="Signature" style="max-width:100px;" />`;
+  document.querySelectorAll('#stagiairesTable tbody tr').forEach(row => {
+    const present = row.querySelector('.presence-checkbox')?.checked;
+    const signatureCell = row.querySelector('.signature-stagiaire');
+    if (present && signatureCell.innerHTML.trim() === '') {
+      signatureCell.innerHTML = `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA..." alt="Auto-signature" style="max-width:100px;" />`;
     }
   });
+  updateFormateurButtonState();
 });
 
-document.getElementById('signTrainerBtn').addEventListener('click', () => {
+function updateFormateurButtonState() {
   const rows = document.querySelectorAll('#stagiairesTable tbody tr');
-  let allSigned = true;
-
-  rows.forEach(row => {
-    const isPresent = row.querySelector('.presence-checkbox')?.checked;
-    const hasSignature = row.querySelector('.signature-stagiaire img');
-    if (isPresent && !hasSignature) {
-      allSigned = false;
-    }
+  const allSigned = Array.from(rows).every(row => {
+    const present = row.querySelector('.presence-checkbox')?.checked;
+    const signature = row.querySelector('.signature-stagiaire')?.innerHTML.trim();
+    return !present || (signature && signature !== '');
   });
 
-  if (!allSigned) {
-    alert("Tous les stagiaires présents doivent avoir signé avant que le formateur puisse signer.");
-    return;
-  }
+  document.getElementById('formateurSignBtn').disabled = !allSigned;
+}
 
-  document.getElementById('trainerSignatureModal').style.display = 'flex';
-  clearTrainerCanvas();
-});
-
-document.get
+function closeModal() {
+  document.getElementById('signatureModal').style.display = 'none';
