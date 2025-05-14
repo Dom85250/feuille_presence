@@ -22,6 +22,9 @@
     <label>Adresse du lieu de formation : <input type="text" id="adresse" required /></label><br>
     <label>Nom du formateur : <input type="text" id="formateur" required /></label><br>
     <label>Nombre de stagiaires : <input type="number" id="nbStagiaires" min="1" required /></label><br>
+    <label>Date : <input type="date" id="date" required /></label><br>
+    <label>Heure d'arrivée : <input type="time" id="arrival" required /></label><br>
+    <label>Heure de départ : <input type="time" id="departure" required /></label><br>
   </form>
 
   <hr>
@@ -32,9 +35,9 @@
     <label>Nom : <input type="text" id="name" required /></label><br>
     <label>Prénom : <input type="text" id="surname" required /></label><br>
     <label>Email : <input type="email" id="email" required /></label><br>
-    <label>Date : <input type="date" id="date" required /></label><br>
-    <label>Heure d'arrivée : <input type="time" id="arrival" required /></label><br>
-    <label>Heure de départ : <input type="time" id="departure" required /></label><br>
+    <label>Date : <input type="date" id="manual-date" required /></label><br>
+    <label>Heure d'arrivée : <input type="time" id="manual-arrival" required /></label><br>
+    <label>Heure de départ : <input type="time" id="manual-departure" required /></label><br>
     <label>Signature :</label><br>
     <canvas id="signature-pad" width="400" height="200" style="border:1px solid #000;"></canvas><br>
     <button type="button" id="clear-signature">Effacer</button><br><br>
@@ -44,7 +47,7 @@
   <hr>
 
   <!-- Import Excel -->
-  <h2>Importer une liste de stagiaires</h2>
+  <h2>Importer une feuille de présence</h2>
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
 
   <!-- Tableau des stagiaires -->
@@ -55,9 +58,6 @@
         <th>Nom</th>
         <th>Prénom</th>
         <th>Email</th>
-        <th>Date</th>
-        <th>Heure de début</th>
-        <th>Heure de fin</th>
         <th>Présent</th>
         <th>Signature stagiaire</th>
         <th>Signature formateur</th>
