@@ -1,59 +1,61 @@
-document.getElementById('exportPDF').addEventListener('click', function () {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+document.getElementById('excelFile').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-  // Récupération des informations sur la formation
-  const centre = document.getElementById('centre').value;
-  const formation = document.getElementById('formation').value;
-  const intitule = document.getElementById('intitule').value;
-  const entreprise = document.getElementById('entreprise').value;
-  const adresse = document.getElementById('adresse').value;
-  const formateur = document.getElementById('formateur').value;
-  const date = document.getElementById('date').value;
-  const arrival = document.getElementById('arrival').value;
-  const departure = document.getElementById('departure').value;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
 
-  // Ajout des informations sur la formation
-  doc.setFontSize(12);
-  let y = 10;
-  const lineHeight = 8;
-  const infos = [
-    `Centre de formation : ${centre}`,
-    `Nom de la formation : ${formation}`,
-    `Intitulé : ${intitule}`,
-    `Entreprise cliente : ${entreprise}`,
-    `Adresse : ${adresse}`,
-    `Nom du formateur : ${formateur}`,
-    `Date : ${date}`,
-    `Heure d'arrivée : ${arrival}`,
-    `Heure de départ : ${departure}`
-  ];
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-  infos.forEach(info => {
-    doc.text(info, 10, y);
-    y += lineHeight;
-  });
+    // Lecture des informations sur la formation (lignes 1 à 9)
+    const infoMap = {};
+    for (let i = 0; i < 9; i++) {
+      const key = rows[i]?.[0];
+      const value = rows[i]?.[1];
+      if (key) infoMap[key.trim()] = value;
+    }
 
-  // Préparation des données du tableau des stagiaires
-  const rows = [];
-  document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
-    const cells = tr.querySelectorAll('td');
-    const nom = cells[0].textContent;
-    const prenom = cells[1].textContent;
-    const email = cells[2].textContent;
-    const present = cells[3].querySelector('input')?.checked ? 'Oui' : 'Non';
-    const signatureStagiaire = cells[4].textContent;
-    const signatureFormateur = cells[5].textContent;
+    console.log("Champs trouvés dans le fichier Excel :", infoMap);
 
-    rows.push([nom, prenom, email, present, signatureStagiaire, signatureFormateur]);
-  });
+    document.getElementById('centre').value = infoMap['Centre de formation'] || '';
+    document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
+    document.getElementById('intitule').value = infoMap['Intitulé'] || '';
+    document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
+    document.getElementById('adresse').value = infoMap['Adresse du lieu de formation'] || '';
+    document.getElementById('formateur').value = infoMap['Nom du formateur'] || '';
+    document.getElementById('date').value = formatDate(infoMap['Date']);
+    document.getElementById('arrival').value = infoMap['Heure de début'] || '';
+    document.getElementById('departure').value = infoMap['Heure de fin'] || '';
 
-  // Ajout du tableau au PDF
-  doc.autoTable({
-    startY: y + 5,
-    head: [['Nom', 'Prénom', 'Email', 'Présent', 'Signature stagiaire', 'Signature formateur']],
-    body: rows
-  });
+    // Lecture des stagiaires à partir de la ligne 12
+    const headers = rows[11];
+    const stagiaires = rows.slice(12);
 
-  doc.save('feuille_de_presence.pdf');
+    document.getElementById('nbStagiaires').value = stagiaires.length;
+
+    const tbody = document.querySelector('#stagiairesTable tbody');
+    tbody.innerHTML = '';
+
+    stagiaires.forEach(row => {
+      const nom = row[headers.indexOf('Nom')] || '';
+      const prenom = row[headers.indexOf('Prénom')] || '';
+      const email = row[headers.indexOf('Email')] || '';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${nom}</td>
+        <td>${prenom}</td>
+        <td>${email}</td>
+        <td><input type="checkbox" class="presence-checkbox" /></td>
+        <td></td>
+        <td></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  };
+
+  reader.readAsArrayBuffer(file);
 });
