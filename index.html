@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Feuille de Présence</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feuille de Présence</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <h1>Feuille de Présence</h1>
+
+  <!-- Formulaire manuel -->
   <form id="attendance-form">
     <label>Nom : <input type="text" id="name" required /></label><br>
     <label>Prénom : <input type="text" id="surname" required /></label><br>
@@ -20,6 +24,28 @@
     <button type="button" id="clear-signature">Effacer</button><br><br>
     <button type="submit">Soumettre</button>
   </form>
+
+  <hr>
+
+  <!-- Import Excel -->
+  <h2>Importer une liste de stagiaires</h2>
+  <input type="file" id="excelFile" accept=".xlsx, .xls" />
+
+  <!-- Tableau des stagiaires -->
+  <table id="stagiairesTable">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Email</th>
+        <th>Présent</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button id="exportPDF">Exporter en PDF</button>
+
   <script src="script.js"></script>
 </body>
 </html>
