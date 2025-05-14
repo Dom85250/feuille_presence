@@ -51,6 +51,16 @@ button:hover {
   background-color: #d1c000;
 }
 
+#signAllBtn {
+  background-color: #00bcd4;
+  color: #fff;
+  margin: 10px 0;
+}
+
+#signAllBtn:hover {
+  background-color: #0097a7;
+}
+
 table {
   width: 95%;
   margin: 20px auto;
@@ -79,6 +89,17 @@ tbody tr:nth-child(odd) {
   background-color: #2e2f33;
 }
 
+/* Fond clair pour les cellules de signature */
+.signature-stagiaire {
+  background-color: #fff;
+  color: #000;
+  text-align: center;
+}
+
+.signature-stagiaire img {
+  max-width: 100px;
+}
+
 @media (max-width: 768px) {
   form, table {
     width: 95%;
@@ -94,7 +115,26 @@ tbody tr:nth-child(odd) {
   }
 }
 
-#signatureModal canvas {
+#signatureModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#signatureModalContent {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  color: #000;
+}
+
+#signatureCanvas {
   background-color: #fff;
   border: 2px solid #000;
   border-radius: 5px;
