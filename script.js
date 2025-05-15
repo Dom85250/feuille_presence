@@ -32,8 +32,6 @@ document.getElementById('formateur').value = infoMap['Formateur'] || '';
 
     const headers = rows[13];
     const stagiaires = rows.slice(14).filter(row => row.length > 0);
-
-
     const tbody = document.querySelector('#stagiairesTable tbody');
     tbody.innerHTML = '';
     stagiaires.forEach(row => {
