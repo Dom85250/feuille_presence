@@ -17,7 +17,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
     const infoMap = {};
-    for (let i = 5; i < 12; i++) {
+    for (let i = 6; i < 12; i++) {
       const key = rows[i]?.[1];
       const value = rows[i]?.[2];
       if (key) infoMap[key.trim()] = value;
