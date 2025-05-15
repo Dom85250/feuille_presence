@@ -12,36 +12,22 @@
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
 
   <form>
-    <label for="centre">Centre de formation :</label>
-    <input type="text" id="centre" />
+  <label for="intitule">Intitulé de la formation :</label>
+  <input type="text" id="intitule" name="intitule" />
 
-    <label for="formation">Nom de la formation :</label>
-    <input type="text" id="formation" />
+  <label for="date">Date :</label>
+  <input type="text" id="date" name="date" />
 
-    <label for="intitule">Intitulé de la formation :</label>
-    <input type="text" id="intitule" />
+  <label for="adresse">Lieu :</label>
+  <input type="text" id="adresse" name="adresse" />
 
-    <label for="entreprise">Entreprise cliente :</label>
-    <input type="text" id="entreprise" />
+  <label for="formateur">Formateur :</label>
+  <input type="text" id="formateur" name="formateur" />
 
-    <label for="adresse">Adresse :</label>
-    <input type="text" id="adresse" />
+  <label for="horaire">Horaire :</label>
+  <input type="text" id="horaire" name="horaire" />
+</form>
 
-    <label for="formateur">Nom du formateur :</label>
-    <input type="text" id="formateur" />
-
-    <label for="date">Date :</label>
-    <input type="date" id="date" />
-
-    <label for="arrival">Heure de début :</label>
-    <input type="text" id="arrival" />
-
-    <label for="departure">Heure de fin :</label>
-    <input type="text" id="departure" />
-
-    <label for="nbStagiaires">Nombre de stagiaires :</label>
-    <input type="number" id="nbStagiaires" readonly />
-  </form>
 
   <!-- Boutons supplémentaires -->
   <button id="addStagiaireBtn">Ajouter un stagiaire manuellement</button>
