@@ -20,9 +20,31 @@ form {
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+/* ✅ Champ spécifique "intitule" */
+#intitule {
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  display: block;
+}
+
 label {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   font-weight: bold;
 }
 
@@ -56,14 +78,7 @@ button:focus {
   outline-offset: 2px;
 }
 
-/* ✅ Champ spécifique "intitule" */
-#intitule {
-  width: 100%;
-  max-width: 400px;
-  box-sizing: border-box;
-}
-
-/* ✅ Tableau modifié */
+/* ✅ Tableau avec colonnes bien dimensionnées */
 table {
   width: 95%;
   max-width: 800px;
@@ -73,14 +88,37 @@ table {
   border-radius: 8px;
   overflow: hidden;
   color: #000;
-  display: block;
-  overflow-x: auto;
 }
 
 th, td {
   padding: 12px;
   border: 1px solid #f0db00;
   text-align: left;
+}
+
+/* ✅ Largeurs spécifiques par colonne */
+th:nth-child(1), td:nth-child(1) {
+  width: 25%;
+}
+
+th:nth-child(2), td:nth-child(2) {
+  width: 25%;
+}
+
+th:nth-child(3), td:nth-child(3) {
+  width: 10%;
+  text-align: center;
+}
+
+th:nth-child(4), td:nth-child(4) {
+  width: 25%;
+}
+
+th:nth-child(5), td:nth-child(5) {
+  width: 15%;
+  background-color: rgb(69, 73, 78);
+  color: white;
+  text-align: center;
 }
 
 thead {
@@ -94,22 +132,6 @@ tbody tr:nth-child(even) {
 
 tbody tr:nth-child(odd) {
   background-color: #ffffff;
-}
-
-/* ✅ Colonne Présent centrée */
-th:nth-child(4),
-td:nth-child(4) {
-  text-align: center;
-  width: 80px;
-}
-
-/* ✅ Colonne Actions réduite et fond gris */
-th:nth-child(6),
-td:nth-child(6) {
-  background-color: rgb(69, 73, 78);
-  color: white;
-  width: 120px;
-  text-align: center;
 }
 
 @media (max-width: 768px) {
