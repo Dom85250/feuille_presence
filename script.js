@@ -44,7 +44,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       headers.forEach((header, i) => {
         stagiaire[header] = row[i] || '';
       });
-      addStagiaireRow(stagiaire['Nom'], stagiaire['Prénom'], stagiaire['Email']);
+      addStagiaireRow(stagiaire['Stagiaire'], stagiaire['Email']);
     });
 
     attachSignatureButtons();
@@ -58,12 +58,11 @@ function formatDate(excelDate) {
   return date.toISOString().split('T')[0];
 }
 
-function addStagiaireRow(nom = '', prenom = '', email = '') {
+function addStagiaireRow(stagiaire = '', email = '') {
   const tbody = document.querySelector('#stagiairesTable tbody');
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td>${nom}</td>
-    <td>${prenom}</td>
+    <td>${stagiaire}</td>
     <td>${email}</td>
     <td class="centered"><input type="checkbox" class="presence-checkbox" /></td>
     <td class="signature-stagiaire"></td>
@@ -113,9 +112,8 @@ function attachSignatureButtons() {
   document.querySelectorAll('.sign-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       currentRow = btn.closest('tr');
-      const nom = currentRow.children[0].textContent;
-      const prenom = currentRow.children[1].textContent;
-      document.getElementById('stagiaireName').textContent = `${prenom} ${nom}`;
+      const stagiaire = currentRow.children[0].textContent;
+      document.getElementById('stagiaireName').textContent = stagiaire;
       document.getElementById('signatureModal').style.display = 'flex';
       clearCanvas();
     });
@@ -123,7 +121,7 @@ function attachSignatureButtons() {
 
   document.querySelectorAll('.email-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const email = btn.closest('tr').children[2].textContent;
+      const email = btn.closest('tr').children[1].textContent;
       alert(`Un lien de signature serait envoyé à : ${email} (fonctionnalité à intégrer avec EmailJS)`);
     });
   });
@@ -150,11 +148,102 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
 
   const rows = document.querySelectorAll('#stagiairesTable tbody tr');
   rows.forEach(row => {
-    const nom = row.children[0].textContent;
-    const prenom = row.children[1].textContent;
+    const stagiaire = row.children[0].textContent;
     const present = row.querySelector('.presence-checkbox').checked;
     const div = document.createElement('div');
     div.style.marginBottom = '20px';
 
     if (present) {
       div.innerHTML = `
+        <strong>${stagiaire}</strong><br/>
+        <canvas width="300" height="100" style="border:1px solid #ccc;"></canvas>
+      `;
+    } else {
+      div.innerHTML = `<strong>${stagiaire}</strong> — <em>Absent</em>`;
+    }
+
+    container.appendChild(div);
+  });
+});
+
+document.getElementById('exportPDF').addEventListener('click', exportPDF);
+
+async function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const centre = document.getElementById('centre').value;
+  const formation = document.getElementById('formation').value;
+  const intitule = document.getElementById('intitule').value;
+  const entreprise = document.getElementById('entreprise').value;
+  const adresse = document.getElementById('adresse').value;
+  const formateur = document.getElementById('formateur').value;
+  const date = document.getElementById('date').value;
+  const arrival = document.getElementById('arrival').value;
+  const departure = document.getElementById('departure').value;
+  const formateurSignature = document.querySelector('#formateurSignature img')?.src;
+
+  doc.setFontSize(12);
+  doc.text(`Centre de formation : ${centre}`, 10, 10);
+  doc.text(`Formation : ${formation}`, 10, 20);
+  doc.text(`Intitulé : ${intitule}`, 10, 30);
+  doc.text(`Entreprise : ${entreprise}`, 10, 40);
+  doc.text(`Adresse : ${adresse}`, 10, 50);
+  doc.text(`Formateur : ${formateur}`, 10, 60);
+  doc.text(`Date : ${date}`, 10, 70);
+  doc.text(`Heure : ${arrival} - ${departure}`, 10, 80);
+
+  const rows = [];
+  document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
+    const stagiaire = tr.children[0].textContent;
+    const email = tr.children[1].textContent;
+    const present = tr.querySelector('.presence-checkbox').checked ? 'Oui' : 'Non';
+    const signatureCell = tr.querySelector('.signature-stagiaire');
+    const signatureImg = signatureCell.querySelector('img')?.src || null;
+    rows.push([stagiaire, email, present, signatureImg]);
+  });
+
+  const tableData = rows.map(row => row.slice(0, 3));
+  doc.autoTable({
+    head: [['Stagiaire', 'Email', 'Présent']],
+    body: tableData,
+    startY: 90,
+  });
+
+  let yOffset = doc.lastAutoTable.finalY + 10;
+  for (let i = 0; i < rows.length; i++) {
+    const [stagiaire, , , signatureImg] = rows[i];
+    if (signatureImg && signatureImg.startsWith("data:image")) {
+      const img = new Image();
+      img.src = signatureImg;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          const imgWidth = 40;
+          const imgHeight = (img.height * imgWidth) / img.width;
+          doc.addImage(signatureImg, 'PNG', 20, yOffset, imgWidth, imgHeight);
+          doc.text(stagiaire, 70, yOffset + imgHeight / 2);
+          yOffset += imgHeight + 10;
+          resolve();
+        };
+        img.onerror = resolve;
+      });
+    }
+  }
+
+  if (formateurSignature && formateurSignature.startsWith("data:image")) {
+    const img = new Image();
+    img.src = formateurSignature;
+    await new Promise((resolve) => {
+      img.onload = () => {
+        const imgWidth = 40;
+        const imgHeight = (img.height * imgWidth) / img.width;
+        doc.addImage(formateurSignature, 'PNG', 20, yOffset + 10, imgWidth, imgHeight);
+        doc.text("Signature du formateur", 70, yOffset + 10 + imgHeight / 2);
+        resolve();
+      };
+      img.onerror = resolve;
+    });
+  }
+
+  doc.save(`feuille-emargement-${date}.pdf`);
+}
