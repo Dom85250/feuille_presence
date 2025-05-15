@@ -17,7 +17,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
     const infoMap = {};
-    for (let i = 6; i < 12; i++) {
+    for (let i = 5; i < 12; i++) {
       const key = rows[i]?.[1];
       const value = rows[i]?.[2];
       if (key) infoMap[key.trim()] = value;
@@ -30,8 +30,8 @@ document.getElementById('horaire').value = infoMap['Horaire'] || '';
 document.getElementById('formateur').value = infoMap['Formateur'] || '';
 
 
-    const headers = rows[13];
-    const stagiaires = rows.slice(14).filter(row => row.length > 0);
+    const headers = rows[15];
+    const stagiaires = rows.slice(16).filter(row => row.length > 0);
     const tbody = document.querySelector('#stagiairesTable tbody');
     tbody.innerHTML = '';
     stagiaires.forEach(row => {
