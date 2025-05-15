@@ -21,28 +21,38 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
     // Lecture des infos générales (lignes 6 à 13 incluses)
-    const infoMap = {};
-    for (let i = 5; i <= 12; i++) {
-      const key = rows[i]?.[0]?.trim();
-      const value = rows[i]?.[1];
-      if (key) infoMap[key] = value;
-    }
+ const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-    console.log("Clés détectées :", Object.keys(infoMap));
-    console.log("Valeurs lues :", infoMap);
+const infoMap = {};
 
-    // Remplissage des champs du formulaire
-    document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
-    document.getElementById('date').value = infoMap['Date'] || '';
-    document.getElementById('adresse').value = infoMap['Lieu'] || '';
-    document.getElementById('horaire').value = infoMap['Horaire'] || '';
-    document.getElementById('formateur').value = infoMap['Formateur'] || '';
+// Lecture des infos générales : lignes 7 à 14 (index 6 à 13)
+const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-    // Lecture du nom de fichier (ligne 13) et chemin (ligne 14)
-    nomFichier = rows[12]?.[1] || '';
-    cheminFichier = rows[13]?.[1] || '';
+const infoMap = {};
 
-  // Lecture des stagiaires à partir de la ligne 16 (index 15)
+// Lecture des infos générales : lignes 7 à 14 (index 6 à 13)
+for (let i = 6; i <= 13; i++) {
+  const rawKey = rows[i]?.[0];
+  const key = normalize(rawKey);
+  const value = rows[i]?.[1];
+  if (key) infoMap[key] = value;
+}
+
+console.log("Clés détectées :", Object.keys(infoMap));
+console.log("Valeurs lues :", infoMap);
+
+// Remplissage des champs du formulaire
+document.getElementById('intitule').value = infoMap['intitule de formation'] || '';
+document.getElementById('date').value = infoMap['date'] || '';
+document.getElementById('adresse').value = infoMap['lieu'] || '';
+document.getElementById('horaire').value = infoMap['horaire'] || '';
+document.getElementById('formateur').value = infoMap['formateur'] || '';
+
+// Lecture du nom de fichier et chemin depuis infoMap
+nomFichier = infoMap['nom fichier pdf'] || '';
+cheminFichier = infoMap['chemin enregistrement pdf'] || '';
+
+// Lecture des stagiaires à partir de la ligne 16 (index 15)
 const headers = rows[15]; // Ligne des en-têtes
 const stagiaires = rows.slice(16); // Lignes suivantes = données
 
@@ -57,6 +67,8 @@ stagiaires.forEach(row => {
   });
   addStagiaireRow(stagiaire['Stagiaire'], stagiaire['Email']);
 });
+
+
 
     attachSignatureButtons();
   };
