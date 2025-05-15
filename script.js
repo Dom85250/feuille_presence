@@ -25,7 +25,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
     document.getElementById('centre').value = infoMap['Centre de formation'] || '';
     document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
-    document document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
+    document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
     document.getElementById('adresse').value = infoMap["Adresse de l'entreprise cliente"] || '';
     document.getElementById('formateur').value = infoMap['Nom du formateur'] || '';
     document.getElementById('date').value = formatDate(infoMap['Date']);
