@@ -23,19 +23,20 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     // Lecture des infos générales (lignes 6 à 12)
     const infoMap = {};
     for (let i = 5; i < 12; i++) {
-      const key = rows[i]?.[0];
+       const key = rows[i]?.[0]?.toLowerCase().trim();
       const value = rows[i]?.[1];
-      if (key) infoMap[key.trim()] = value;
+    if (key) infoMap[key] = value;
     }
 
 console.log("Clés détectées dans infoMap :", Object.keys(infoMap));
 
     // Remplissage des champs
-    document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
-    document.getElementById('date').value = infoMap['Date'] || '';
-    document.getElementById('adresse').value = infoMap['Lieu'] || '';
-    document.getElementById('horaire').value = infoMap['Horaire'] || '';
-    document.getElementById('formateur').value = infoMap['Formateur'] || '';
+document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
+document.getElementById('date').value = infoMap['Date'] || '';
+document.getElementById('adresse').value = infoMap['Lieu'] || '';
+document.getElementById('horaire').value = infoMap['Horaire'] || '';
+document.getElementById('formateur').value = infoMap['Formateur'] || '';
+
 
     // Lecture du nom de fichier (B13) et chemin (B14)
     nomFichier = rows[12]?.[1] || '';
