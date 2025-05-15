@@ -20,13 +20,10 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-
 // Lecture des infos générales : lignes 7 à 14 (index 6 à 13)
 const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
 const infoMap = {};
 
-// Lecture des infos générales : lignes 7 à 14 (index 6 à 13)
 for (let i = 6; i <= 13; i++) {
   const rawKey = rows[i]?.[0];
   const key = normalize(rawKey);
