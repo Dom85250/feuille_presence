@@ -32,7 +32,7 @@ document.getElementById('formateur').value = infoMap['Formateur'] || '';
 
     const headers = rows[13];
     const stagiaires = rows.slice(14).filter(row => row.length > 0);
-    document.getElementById('nbStagiaires').value = stagiaires.length;
+
 
     const tbody = document.querySelector('#stagiairesTable tbody');
     tbody.innerHTML = '';
