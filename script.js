@@ -25,13 +25,11 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
     document.getElementById('centre').value = infoMap['Centre de formation'] || '';
     document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
-    document.getElementById('intitule').value = infoMap['Intitulé de la formation'] || '';
-    document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
+    document document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
     document.getElementById('adresse').value = infoMap["Adresse de l'entreprise cliente"] || '';
     document.getElementById('formateur').value = infoMap['Nom du formateur'] || '';
     document.getElementById('date').value = formatDate(infoMap['Date']);
-    document.getElementById('arrival').value = infoMap['Heure de début'] || '';
-    document.getElementById('departure').value = infoMap['Heure de fin'] || '';
+    document.getElementById('horaire').value = infoMap['Horaire'] || '';
 
     const headers = rows[13];
     const stagiaires = rows.slice(14).filter(row => row.length > 0);
@@ -107,7 +105,6 @@ document.getElementById('saveSignature').addEventListener('click', () => {
   closeModal();
   updateFormateurButtonState();
 });
-
 function attachSignatureButtons() {
   document.querySelectorAll('.sign-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -179,8 +176,7 @@ async function exportPDF() {
   const adresse = document.getElementById('adresse').value;
   const formateur = document.getElementById('formateur').value;
   const date = document.getElementById('date').value;
-  const arrival = document.getElementById('arrival').value;
-  const departure = document.getElementById('departure').value;
+  const horaire = document.getElementById('horaire').value;
   const formateurSignature = document.querySelector('#formateurSignature img')?.src;
 
   doc.setFontSize(12);
@@ -191,7 +187,7 @@ async function exportPDF() {
   doc.text(`Adresse : ${adresse}`, 10, 50);
   doc.text(`Formateur : ${formateur}`, 10, 60);
   doc.text(`Date : ${date}`, 10, 70);
-  doc.text(`Heure : ${arrival} - ${departure}`, 10, 80);
+  doc.text(`Horaire : ${horaire}`, 10, 80);
 
   const rows = [];
   document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
