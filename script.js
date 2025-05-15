@@ -45,8 +45,10 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         <td>${stagiaire['Email']}</td>
         <td><input type="checkbox" class="presence-checkbox" ${stagiaire['Présent'] === 'Oui' ? 'checked' : ''} /></td>
         <td class="signature-stagiaire">${stagiaire['Signature stagiaire'] || ''}</td>
-        <td>${stagiaire['Signature formateur'] || ''}</td>
-        <td><button class="sign-btn">Signer en présentiel</button><button class="email-btn">Envoyer par mail</button></td>
+        <td>
+          <button class="sign-btn">Signer en présentiel</button>
+          <button class="email-btn">Envoyer par mail</button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -122,108 +124,88 @@ function closeModal() {
   document.getElementById('signatureModal').style.display = 'none';
   document.getElementById('formateurSignatureModal').style.display = 'none';
 }
-document.getElementById('exportPDF').addEventListener('click', function () {
+document.getElementById('exportPDF').addEventListener('click', exportPDF);
+
+async function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const infos = [
-    `Centre de formation : ${centre.value}`,
-    `Nom de la formation : ${formation.value}`,
-    `Intitulé : ${intitule.value}`,
-    `Entreprise cliente : ${entreprise.value}`,
-    `Adresse : ${adresse.value}`,
-    `Nom du formateur : ${formateur.value}`,
-    `Date : ${date.value}`,
-    `Heure d'arrivée : ${arrival.value}`,
-    `Heure de départ : ${departure.value}`
-  ];
+  const centre = document.getElementById('centre').value;
+  const formation = document.getElementById('formation').value;
+  const intitule = document.getElementById('intitule').value;
+  const entreprise = document.getElementById('entreprise').value;
+  const adresse = document.getElementById('adresse').value;
+  const formateur = document.getElementById('formateur').value;
+  const date = document.getElementById('date').value;
+  const arrival = document.getElementById('arrival').value;
+  const departure = document.getElementById('departure').value;
+  const formateurSignature = document.querySelector('#formateurSignature canvas')?.toDataURL();
 
-  let y = 10;
-  infos.forEach(info => {
-    doc.text(info, 10, y);
-    y += 8;
-  });
+  doc.setFontSize(12);
+  doc.text(`Centre de formation : ${centre}`, 10, 10);
+  doc.text(`Formation : ${formation}`, 10, 20);
+  doc.text(`Intitulé : ${intitule}`, 10, 30);
+  doc.text(`Entreprise : ${entreprise}`, 10, 40);
+  doc.text(`Adresse : ${adresse}`, 10, 50);
+  doc.text(`Formateur : ${formateur}`, 10, 60);
+  doc.text(`Date : ${date}`, 10, 70);
+  doc.text(`Heure : ${arrival} - ${departure}`, 10, 80);
 
   const rows = [];
   document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
-    const cells = tr.querySelectorAll('td');
-    const nom = cells[0].textContent;
-    const prenom = cells[1].textContent;
-    const email = cells[2].textContent;
-    const present = cells[3].querySelector('input')?.checked ? 'Oui' : 'Non';
-    const signatureStagiaire = cells[4].querySelector('img')?.src || '';
-    const signatureFormateur = cells[5].textContent;
-    rows.push([nom, prenom, email, present, signatureStagiaire, signatureFormateur]);
+    const nom = tr.children[0].textContent;
+    const prenom = tr.children[1].textContent;
+    const email = tr.children[2].textContent;
+    const present = tr.querySelector('.presence-checkbox').checked ? 'Oui' : 'Non';
+    const signatureCell = tr.querySelector('.signature-stagiaire');
+    const signatureImg = signatureCell.querySelector('img')?.src || null;
+
+    rows.push([nom, prenom, email, present, signatureImg]);
   });
 
+  const tableData = rows.map(row => row.slice(0, 4));
   doc.autoTable({
-    startY: y + 5,
-    head: [['Nom', 'Prénom', 'Email', 'Présent', 'Signature stagiaire', 'Signature formateur']],
-    body: rows,
-    didDrawCell: function (data) {
-      if (data.column.index === 4 && data.cell.raw) {
-        const img = new Image();
-        img.src = data.cell.raw;
-        doc.addImage(img, 'PNG', data.cell.x + 2, data.cell.y + 2, 20, 10);
-      }
-    }
+    head: [['Nom', 'Prénom', 'Email', 'Présent']],
+    body: tableData,
+    startY: 90,
   });
 
-  const formateurSignature = document.getElementById('formateurSignature').querySelector('img')?.src || '';
-  if (formateurSignature) {
-    const img = new Image();
-    img.onload = function () {
-      const finalY = doc.lastAutoTable.finalY || y + 10;
-      doc.text("Signature du formateur :", 10, finalY + 10);
-      doc.addImage(img, 'PNG', 10, finalY + 15, 50, 20);
-      doc.save('feuille_de_presence.pdf');
-    };
-    img.src = formateurSignature;
-  } else {
-    doc.save('feuille_de_presence.pdf');
+  // Ajout des signatures stagiaires
+  let yOffset = doc.lastAutoTable.finalY + 10;
+  for (let i = 0; i < rows.length; i++) {
+    const [nom, prenom, , , signatureImg] = rows[i];
+    if (signatureImg && signatureImg.startsWith("data:image")) {
+      const img = new Image();
+      img.src = signatureImg;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          const imgWidth = 40;
+          const imgHeight = (img.height * imgWidth) / img.width;
+          doc.addImage(signatureImg, 'PNG', 20, yOffset, imgWidth, imgHeight);
+          doc.text(`${prenom} ${nom}`, 70, yOffset + imgHeight / 2);
+          yOffset += imgHeight + 10;
+          resolve();
+        };
+        img.onerror = resolve;
+      });
+    }
   }
-});
 
-// 🎨 Initialisation du canvas stagiaire
-const signatureCanvas = document.getElementById('signatureCanvas');
-const signatureCtx = signatureCanvas.getContext('2d');
-let drawing = false;
+  // Ajout de la signature du formateur
+  if (formateurSignature && formateurSignature.startsWith("data:image")) {
+    const img = new Image();
+    img.src = formateurSignature;
+    await new Promise((resolve) => {
+      img.onload = () => {
+        const imgWidth = 40;
+        const imgHeight = (img.height * imgWidth) / img.width;
+        doc.addImage(formateurSignature, 'PNG', 20, yOffset + 10, imgWidth, imgHeight);
+        doc.text("Signature du formateur", 70, yOffset + 10 + imgHeight / 2);
+        resolve();
+      };
+      img.onerror = resolve;
+    });
+  }
 
-signatureCanvas.addEventListener('mousedown', () => drawing = true);
-signatureCanvas.addEventListener('mouseup', () => {
-  drawing = false;
-  signatureCtx.beginPath();
-});
-signatureCanvas.addEventListener('mouseout', () => drawing = false);
-signatureCanvas.addEventListener('mousemove', function (e) {
-  if (!drawing) return;
-  signatureCtx.lineWidth = 2;
-  signatureCtx.lineCap = 'round';
-  signatureCtx.strokeStyle = '#000';
-  signatureCtx.lineTo(e.offsetX, e.offsetY);
-  signatureCtx.stroke();
-  signatureCtx.beginPath();
-  signatureCtx.moveTo(e.offsetX, e.offsetY);
-});
-
-// 🎨 Initialisation du canvas formateur
-const formateurCanvas = document.getElementById('formateurCanvas');
-const formateurCtx = formateurCanvas.getContext('2d');
-let drawingFormateur = false;
-
-formateurCanvas.addEventListener('mousedown', () => drawingFormateur = true);
-formateurCanvas.addEventListener('mouseup', () => {
-  drawingFormateur = false;
-  formateurCtx.beginPath();
-});
-formateurCanvas.addEventListener('mouseout', () => drawingFormateur = false);
-formateurCanvas.addEventListener('mousemove', function (e) {
-  if (!drawingFormateur) return;
-  formateurCtx.lineWidth = 2;
-  formateurCtx.lineCap = 'round';
-  formateurCtx.strokeStyle = '#000';
-  formateurCtx.lineTo(e.offsetX, e.offsetY);
-  formateurCtx.stroke();
-  formateurCtx.beginPath();
-  formateurCtx.moveTo(e.offsetX, e.offsetY);
-});
+  doc.save(`feuille-emargement-${date}.pdf`);
+}
