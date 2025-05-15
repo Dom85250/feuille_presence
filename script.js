@@ -20,27 +20,25 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // Lecture des infos générales (lignes 6 à 12)
+    // Lecture des infos générales (lignes 6 à 13 incluses)
     const infoMap = {};
-    for (let i = 5; i < 12; i++) {
-       const key = rows[i]?.[0]?.trim();
+    for (let i = 5; i <= 12; i++) {
+      const key = rows[i]?.[0]?.trim();
       const value = rows[i]?.[1];
-    if (key) infoMap[key] = value;
+      if (key) infoMap[key] = value;
     }
 
+    console.log("Clés détectées :", Object.keys(infoMap));
+    console.log("Valeurs lues :", infoMap);
 
-console.log("Clés détectées :", Object.keys(infoMap));
+    // Remplissage des champs du formulaire
+    document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
+    document.getElementById('date').value = infoMap['Date'] || '';
+    document.getElementById('adresse').value = infoMap['Lieu'] || '';
+    document.getElementById('horaire').value = infoMap['Horaire'] || '';
+    document.getElementById('formateur').value = infoMap['Formateur'] || '';
 
-
-    // Remplissage des champs
-document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
-document.getElementById('date').value = infoMap['Date'] || '';
-document.getElementById('adresse').value = infoMap['Lieu'] || '';
-document.getElementById('horaire').value = infoMap['Horaire'] || '';
-document.getElementById('formateur').value = infoMap['Formateur'] || '';
-
-
-    // Lecture du nom de fichier (B13) et chemin (B14)
+    // Lecture du nom de fichier (ligne 13) et chemin (ligne 14)
     nomFichier = rows[12]?.[1] || '';
     cheminFichier = rows[13]?.[1] || '';
 
@@ -79,33 +77,6 @@ function addStagiaireRow(stagiaire = '', email = '') {
   attachSignatureButtons();
   updateFormateurButtonState();
 }
-
-function attachSignatureButtons() {
-  document.querySelectorAll('.sign-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentRow = btn.closest('tr');
-      const stagiaire = currentRow.children[0].textContent;
-      document.getElementById('stagiaireName').textContent = stagiaire;
-      document.getElementById('signatureModal').style.display = 'flex';
-      clearCanvas();
-    });
-  });
-
-  document.querySelectorAll('.email-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const email = btn.closest('tr').children[1].textContent;
-      alert(`Un lien de signature serait envoyé à : ${email} (fonctionnalité à intégrer avec EmailJS)`);
-    });
-  });
-
-  updateFormateurButtonState();
-}
-
-function clearCanvas() {
-  if (signatureCtx) signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-  if (formateurCtx) formateurCtx.clearRect(0, 0, formateurCanvas.width, formateurCanvas.height);
-}
-
 function closeModal() {
   document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
 }
@@ -133,6 +104,7 @@ document.getElementById('saveFormateurSignature').addEventListener('click', () =
   cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
   closeModal();
 });
+
 function updateFormateurButtonState() {
   const rows = document.querySelectorAll('#stagiairesTable tbody tr');
   const allSigned = Array.from(rows).every(row => {
@@ -143,7 +115,6 @@ function updateFormateurButtonState() {
   document.getElementById('formateurSignBtn').disabled = !allSigned;
 }
 
-// Signature collective
 document.getElementById('signAllBtn').addEventListener('click', () => {
   const modal = document.getElementById('collectiveSignatureModal');
   const container = document.getElementById('signatureListContainer');
@@ -170,21 +141,20 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
   });
 });
 
-// Export PDF
 document.getElementById('exportPDF').addEventListener('click', exportPDF);
 
 async function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const centre = document.getElementById('centre').value;
-  const formation = document.getElementById('formation').value;
-  const intitule = document.getElementById('intitule').value;
-  const entreprise = document.getElementById('entreprise').value;
-  const adresse = document.getElementById('adresse').value;
-  const formateur = document.getElementById('formateur').value;
-  const date = document.getElementById('date').value;
-  const horaire = document.getElementById('horaire').value;
+  const centre = document.getElementById('centre')?.value || '';
+  const formation = document.getElementById('formation')?.value || '';
+  const intitule = document.getElementById('intitule')?.value || '';
+  const entreprise = document.getElementById('entreprise')?.value || '';
+  const adresse = document.getElementById('adresse')?.value || '';
+  const formateur = document.getElementById('formateur')?.value || '';
+  const date = document.getElementById('date')?.value || '';
+  const horaire = document.getElementById('horaire')?.value || '';
   const formateurSignature = document.querySelector('#formateurSignature img')?.src;
 
   doc.setFontSize(12);
