@@ -236,4 +236,14 @@ async function exportPDF() {
       img.onload = () => {
         const imgWidth = 40;
         const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(form
+        doc.addImage(formateurSignature, 'PNG', 20, yOffset + 10, imgWidth, imgHeight);
+        doc.text("Signature du formateur", 70, yOffset + 10 + imgHeight / 2);
+        resolve();
+      };
+      img.onerror = resolve;
+    });
+  }
+
+  const nomFinal = nomFichier || `feuille-emargement-${date}`;
+  doc.save(`${nomFinal}.pdf`);
+}
