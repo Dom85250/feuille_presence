@@ -28,6 +28,8 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       if (key) infoMap[key.trim()] = value;
     }
 
+console.log("Clés détectées dans infoMap :", Object.keys(infoMap));
+
     // Remplissage des champs
     document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
     document.getElementById('date').value = infoMap['Date'] || '';
