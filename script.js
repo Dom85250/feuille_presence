@@ -28,7 +28,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
     document.getElementById('adresse').value = infoMap["Adresse de l'entreprise cliente"] || '';
     document.getElementById('formateur').value = infoMap['Nom du formateur'] || '';
-    document.getElementById('date').value = formatDate(infoMap['Date']);
+    document.getElementById('date').value = infoMap['Date'] || '';
     document.getElementById('horaire').value = infoMap['Horaire'] || '';
 
     const headers = rows[13];
