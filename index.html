@@ -6,30 +6,31 @@
   <title>Feuille d'émargement</title>
   <link rel="stylesheet" href="./styles.css" />
 <style>
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 1000px;
-  }
+ form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 1000px;
+}
 
-  .form-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  label {
-    width: 180px;
-    text-align: right;
-  }
+label {
+  width: 200px; /* Augmenté pour s'adapter au label le plus long */
+  text-align: right;
+  flex-shrink: 0; /* Empêche le label de rétrécir */
+}
 
-  .form-group input[type="text"] {
-    width: 100%;
-    max-width: 600px;
-    padding: 5px;
-    box-sizing: border-box;
-  }
+.form-group input[type="text"] {
+  flex: 1;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
 </style>
 
 
