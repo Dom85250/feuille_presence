@@ -15,7 +15,8 @@ form {
   background-color: #55595f;
   padding: 20px;
   margin: 20px auto;
-  max-width: 700px;
+  width: 100%;
+  max-width: 900px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
@@ -26,7 +27,6 @@ form {
 
 .form-group input[type="text"] {
   width: 100%;
-  max-width: 400px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -37,7 +37,7 @@ form {
 /* ✅ Champ spécifique "intitule" */
 #intitule {
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   box-sizing: border-box;
   display: block;
 }
@@ -80,8 +80,7 @@ button:focus {
 
 /* ✅ Tableau avec colonnes bien dimensionnées */
 table {
-  width: 95%;
-  max-width: 800px;
+  width: 100%;
   margin: 20px auto;
   border-collapse: collapse;
   background-color: #ffffff;
@@ -136,7 +135,7 @@ tbody tr:nth-child(odd) {
 
 @media (max-width: 768px) {
   form, table {
-    width: 95%;
+    width: 100%;
   }
 
   th, td {
