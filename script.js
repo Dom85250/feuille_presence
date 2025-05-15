@@ -42,18 +42,21 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     nomFichier = rows[12]?.[1] || '';
     cheminFichier = rows[13]?.[1] || '';
 
-    // Lecture des stagiaires
-    const headers = rows[15];
-    const stagiaires = rows.slice(16).filter(row => row.length > 0);
-    const tbody = document.querySelector('#stagiairesTable tbody');
-    tbody.innerHTML = '';
-    stagiaires.forEach(row => {
-      const stagiaire = {};
-      headers.forEach((header, i) => {
-        stagiaire[header] = row[i] || '';
-      });
-      addStagiaireRow(stagiaire['Stagiaire'], stagiaire['Email']);
-    });
+  // Lecture des stagiaires à partir de la ligne 16 (index 15)
+const headers = rows[15]; // Ligne des en-têtes
+const stagiaires = rows.slice(16); // Lignes suivantes = données
+
+const tbody = document.querySelector('#stagiairesTable tbody');
+tbody.innerHTML = '';
+
+stagiaires.forEach(row => {
+  if (row.length === 0 || !row[0]) return; // ignorer les lignes vides
+  const stagiaire = {};
+  headers.forEach((header, i) => {
+    stagiaire[header?.trim()] = row[i] || '';
+  });
+  addStagiaireRow(stagiaire['Stagiaire'], stagiaire['Email']);
+});
 
     attachSignatureButtons();
   };
