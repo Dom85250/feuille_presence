@@ -23,13 +23,12 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       if (key) infoMap[key.trim()] = value;
     }
 
-    document.getElementById('centre').value = infoMap['Centre de formation'] || '';
-    document.getElementById('formation').value = infoMap['Nom de la formation'] || '';
-    document.getElementById('entreprise').value = infoMap['Entreprise cliente'] || '';
-    document.getElementById('adresse').value = infoMap["Adresse de l'entreprise cliente"] || '';
-    document.getElementById('formateur').value = infoMap['Nom du formateur'] || '';
-    document.getElementById('date').value = infoMap['Date'] || '';
-    document.getElementById('horaire').value = infoMap['Horaire'] || '';
+document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
+document.getElementById('date').value = infoMap['Date'] || '';
+document.getElementById('adresse').value = infoMap['Lieu'] || '';
+document.getElementById('horaire').value = infoMap['Horaire'] || '';
+document.getElementById('formateur').value = infoMap['Formateur'] || '';
+
 
     const headers = rows[13];
     const stagiaires = rows.slice(14).filter(row => row.length > 0);
