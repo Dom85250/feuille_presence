@@ -5,27 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Feuille d'émargement</title>
   <link rel="stylesheet" href="./styles.css" />
+<style>
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 600px;
+  }
+  .form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  label {
+    width: 180px;
+    text-align: right;
+  }
+  input {
+    flex: 1;
+    padding: 5px;
+  }
+</style>
+
 </head>
 <body>
   <h1>Feuille d'émargement</h1>
 
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
 
-  <form>
-  <label for="intitule">Intitulé de la formation :</label>
-  <input type="text" id="intitule" name="intitule" />
-
-  <label for="date">Date :</label>
-  <input type="text" id="date" name="date" />
-
-  <label for="adresse">Lieu :</label>
-  <input type="text" id="adresse" name="adresse" />
-
-  <label for="formateur">Formateur :</label>
-  <input type="text" id="formateur" name="formateur" />
-
-  <label for="horaire">Horaire :</label>
-  <input type="text" id="horaire" name="horaire" />
+ <form>
+  <div class="form-group">
+    <label for="intitule">Intitulé de la formation :</label>
+    <input type="text" id="intitule" name="intitule" />
+  </div>
+  <div class="form-group">
+    <label for="date">Date :</label>
+    <input type="text" id="date" name="date" />
+  </div>
+  <div class="form-group">
+    <label for="adresse">Lieu :</label>
+    <input type="text" id="adresse" name="adresse" />
+  </div>
+  <div class="form-group">
+    <label for="formateur">Formateur :</label>
+    <input type="text" id="formateur" name="formateur" />
+  </div>
+  <div class="form-group">
+    <label for="horaire">Horaire :</label>
+    <input type="text" id="horaire" name="horaire" />
+  </div>
 </form>
 
 
