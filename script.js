@@ -23,8 +23,8 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     // Lecture des infos générales (lignes 6 à 12)
     const infoMap = {};
     for (let i = 5; i < 12; i++) {
-      const key = rows[i]?.[1];
-      const value = rows[i]?.[2];
+      const key = rows[i]?.[0];
+      const value = rows[i]?.[1];
       if (key) infoMap[key.trim()] = value;
     }
 
