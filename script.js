@@ -28,7 +28,9 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     if (key) infoMap[key] = value;
     }
 
-console.log("Clés détectées dans infoMap :", Object.keys(infoMap));
+
+console.log("Clés détectées :", Object.keys(infoMap));
+
 
     // Remplissage des champs
 document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
