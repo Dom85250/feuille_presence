@@ -51,6 +51,17 @@ button:hover {
   background-color: #d1c000;
 }
 
+button:focus {
+  outline: 2px solid #f0db00;
+  outline-offset: 2px;
+}
+
+/* ✅ Champ spécifique "intitule" */
+#intitule {
+  width: 100%;
+  max-width: 400px;
+}
+
 /* ✅ Tableau modifié */
 table {
   width: 95%;
@@ -61,6 +72,8 @@ table {
   border-radius: 8px;
   overflow: hidden;
   color: #000;
+  display: block;
+  overflow-x: auto;
 }
 
 th, td {
@@ -97,6 +110,7 @@ td:nth-child(6) {
   width: 120px;
   text-align: center;
 }
+
 @media (max-width: 768px) {
   form, table {
     width: 95%;
@@ -109,6 +123,13 @@ td:nth-child(6) {
 
   input, button {
     font-size: 14px;
+  }
+
+  #signatureModal button,
+  #formateurSignatureModal button,
+  #collectiveSignatureModal button {
+    width: 100%;
+    margin: 5px 0;
   }
 }
 
@@ -137,6 +158,7 @@ td:nth-child(6) {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  transition: opacity 0.3s ease;
 }
 
 #signatureModal > div,
