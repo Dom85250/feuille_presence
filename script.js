@@ -6,9 +6,13 @@ const signatureCtx = signatureCanvas.getContext('2d');
 const formateurCanvas = document.getElementById('formateurCanvas');
 const formateurCtx = formateurCanvas.getContext('2d');
 
+let nomFichier = '';
+let cheminFichier = '';
+
 document.getElementById('excelFile').addEventListener('change', function (e) {
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = function (e) {
     const data = new Uint8Array(e.target.result);
@@ -16,6 +20,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
+    // Lecture des infos générales (lignes 6 à 12)
     const infoMap = {};
     for (let i = 5; i < 12; i++) {
       const key = rows[i]?.[1];
@@ -23,13 +28,18 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       if (key) infoMap[key.trim()] = value;
     }
 
-document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
-document.getElementById('date').value = infoMap['Date'] || '';
-document.getElementById('adresse').value = infoMap['Lieu'] || '';
-document.getElementById('horaire').value = infoMap['Horaire'] || '';
-document.getElementById('formateur').value = infoMap['Formateur'] || '';
+    // Remplissage des champs
+    document.getElementById('intitule').value = infoMap['Intitulé de Formation'] || '';
+    document.getElementById('date').value = infoMap['Date'] || '';
+    document.getElementById('adresse').value = infoMap['Lieu'] || '';
+    document.getElementById('horaire').value = infoMap['Horaire'] || '';
+    document.getElementById('formateur').value = infoMap['Formateur'] || '';
 
+    // Lecture du nom de fichier (B13) et chemin (B14)
+    nomFichier = rows[12]?.[1] || '';
+    cheminFichier = rows[13]?.[1] || '';
 
+    // Lecture des stagiaires
     const headers = rows[15];
     const stagiaires = rows.slice(16).filter(row => row.length > 0);
     const tbody = document.querySelector('#stagiairesTable tbody');
@@ -46,12 +56,6 @@ document.getElementById('formateur').value = infoMap['Formateur'] || '';
   };
   reader.readAsArrayBuffer(file);
 });
-
-function formatDate(excelDate) {
-  if (typeof excelDate === 'string') return excelDate;
-  const date = new Date((excelDate - 25569) * 86400 * 1000);
-  return date.toISOString().split('T')[0];
-}
 
 function addStagiaireRow(stagiaire = '', email = '') {
   const tbody = document.querySelector('#stagiairesTable tbody');
@@ -71,37 +75,6 @@ function addStagiaireRow(stagiaire = '', email = '') {
   updateFormateurButtonState();
 }
 
-document.getElementById('addStagiaireBtn').addEventListener('click', () => {
-  addStagiaireRow();
-});
-document.getElementById('formateurSignBtn').addEventListener('click', () => {
-  document.getElementById('formateurSignatureModal').style.display = 'flex';
-  clearCanvas();
-});
-
-document.getElementById('saveFormateurSignature').addEventListener('click', () => {
-  const dataURL = formateurCanvas.toDataURL();
-  const cell = document.getElementById('formateurSignature');
-  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
-  closeModal();
-});
-
-function clearCanvas() {
-  if (signatureCtx) signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-  if (formateurCtx) formateurCtx.clearRect(0, 0, formateurCanvas.width, formateurCanvas.height);
-}
-
-function closeModal() {
-  document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
-}
-
-document.getElementById('saveSignature').addEventListener('click', () => {
-  const dataURL = signatureCanvas.toDataURL();
-  const cell = currentRow.querySelector('.signature-stagiaire');
-  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
-  closeModal();
-  updateFormateurButtonState();
-});
 function attachSignatureButtons() {
   document.querySelectorAll('.sign-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -123,6 +96,38 @@ function attachSignatureButtons() {
   updateFormateurButtonState();
 }
 
+function clearCanvas() {
+  if (signatureCtx) signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  if (formateurCtx) formateurCtx.clearRect(0, 0, formateurCanvas.width, formateurCanvas.height);
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
+}
+
+document.getElementById('saveSignature').addEventListener('click', () => {
+  const dataURL = signatureCanvas.toDataURL();
+  const cell = currentRow.querySelector('.signature-stagiaire');
+  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+  closeModal();
+  updateFormateurButtonState();
+});
+
+document.getElementById('addStagiaireBtn').addEventListener('click', () => {
+  addStagiaireRow();
+});
+
+document.getElementById('formateurSignBtn').addEventListener('click', () => {
+  document.getElementById('formateurSignatureModal').style.display = 'flex';
+  clearCanvas();
+});
+
+document.getElementById('saveFormateurSignature').addEventListener('click', () => {
+  const dataURL = formateurCanvas.toDataURL();
+  const cell = document.getElementById('formateurSignature');
+  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+  closeModal();
+});
 function updateFormateurButtonState() {
   const rows = document.querySelectorAll('#stagiairesTable tbody tr');
   const allSigned = Array.from(rows).every(row => {
@@ -160,6 +165,7 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
   });
 });
 
+// Export PDF
 document.getElementById('exportPDF').addEventListener('click', exportPDF);
 
 async function exportPDF() {
@@ -230,13 +236,4 @@ async function exportPDF() {
       img.onload = () => {
         const imgWidth = 40;
         const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(formateurSignature, 'PNG', 20, yOffset + 10, imgWidth, imgHeight);
-        doc.text("Signature du formateur", 70, yOffset + 10 + imgHeight / 2);
-        resolve();
-      };
-      img.onerror = resolve;
-    });
-  }
-
-  doc.save(`feuille-emargement-${date}.pdf`);
-}
+        doc.addImage(form
