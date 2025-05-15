@@ -4,19 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feuille de Présence</title>
-
-  <!-- ✅ Lien vers ton fichier CSS -->
-  <link rel="stylesheet" href="styles.css">
-
-  <!-- ✅ Bibliothèques externes -->
+  <link rel="stylesheet" href="styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
-
 <body>
   <h1>Feuille de Présence</h1>
-
   <form>
     <label>Importer un fichier Excel :
       <input type="file" id="excelFile" accept=".xlsx, .xls" />
@@ -31,13 +25,11 @@
     <label>Heure de début : <input type="text" id="arrival" /></label>
     <label>Heure de fin : <input type="text" id="departure" /></label>
     <label>Nombre de stagiaires : <input type="number" id="nbStagiaires" readonly /></label>
-
     <button type="button" id="ajouterStagiaire">Ajouter un stagiaire</button>
     <button type="button" id="exportPDF">Exporter en PDF</button>
     <button type="button" id="signAllBtn">Faire signer tous les stagiaires présents</button>
     <button type="button" id="formateurSignBtn" disabled>Signature du formateur</button>
   </form>
-
   <table id="stagiairesTable">
     <thead>
       <tr>
@@ -68,7 +60,7 @@
   <div id="formateurSignatureModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
     <div style="background:#fff; padding:20px; border-radius:10px; text-align:center;">
       <h2>Signature du formateur</h2>
-      <canvas id="signatureCanvas" width="400" height="200" style="border:1px solid #ccc;"></canvas><br />
+      <canvas id="formateurCanvas" width="400" height="200" style="border:1px solid #ccc;"></canvas><br />
       <button onclick="clearCanvas()">Effacer</button>
       <button id="saveFormateurSignature">Enregistrer</button>
       <button onclick="closeModal()">Fermer</button>
@@ -77,7 +69,7 @@
 
   <!-- Emplacement pour afficher la signature du formateur -->
   <div id="formateurSignature" style="margin-top:10px;"></div>
-
+  <!-- Inclusion du script principal -->
   <script src="script.js" defer></script>
 </body>
 </html>
