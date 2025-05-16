@@ -5,65 +5,71 @@ function normalize(str) {
   return str?.toString().trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 }
 // =======================
-// Initialisation du canvas de signature (précise souris & tactile)
+// Initialisation du canvas de signature (compatible tactile & souris)
 // =======================
 function initSignatureCanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
-  const ctx = canvas.getContext('2d');
 
-  // Réinitialise l’arrière-plan en blanc
+  // Empêche l'étirement visuel : assure que l'affichage correspond à la taille réelle
+  canvas.style.width = canvas.width + "px";
+  canvas.style.height = canvas.height + "px";
+
+  const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.strokeStyle = '#000';
+  ctx.strokeStyle = "#000";
   ctx.lineWidth = 2;
+
   let drawing = false;
 
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-    return {
-      x: (clientX - rect.left) * (canvas.width / rect.width),
-      y: (clientY - rect.top) * (canvas.height / rect.height)
-    };
+    if (e.touches) {
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top,
+      };
+    } else {
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+    }
   }
 
-  function start(e) {
+  function startDrawing(e) {
     e.preventDefault();
     drawing = true;
-    const { x, y } = getPos(e);
+    const pos = getPos(e);
     ctx.beginPath();
-    ctx.moveTo(x, y);
+    ctx.moveTo(pos.x, pos.y);
   }
 
-  function move(e) {
+  function draw(e) {
     if (!drawing) return;
     e.preventDefault();
-    const { x, y } = getPos(e);
-    ctx.lineTo(x, y);
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
   }
 
-  function end(e) {
+  function stopDrawing(e) {
     if (!drawing) return;
     e.preventDefault();
     drawing = false;
   }
 
-  // Supprime les anciens écouteurs éventuels
-  canvas.replaceWith(canvas.cloneNode(true));
-  const cleanCanvas = document.getElementById(canvasId);
-  cleanCanvas.addEventListener('mousedown', start);
-  cleanCanvas.addEventListener('mousemove', move);
-  cleanCanvas.addEventListener('mouseup', end);
-  cleanCanvas.addEventListener('mouseout', end);
-  cleanCanvas.addEventListener('touchstart', start, { passive: false });
-  cleanCanvas.addEventListener('touchmove', move, { passive: false });
-  cleanCanvas.addEventListener('touchend', end);
+  canvas.addEventListener("mousedown", startDrawing);
+  canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("mouseup", stopDrawing);
+  canvas.addEventListener("mouseout", stopDrawing);
+
+  canvas.addEventListener("touchstart", startDrawing, { passive: false });
+  canvas.addEventListener("touchmove", draw, { passive: false });
+  canvas.addEventListener("touchend", stopDrawing);
 }
+
 
 // =======================
 // Nettoyage du canvas
