@@ -18,6 +18,8 @@ function normalize(str) {
 function initSignatureCanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 2;
   let drawing = false;
 
   function getX(e) {
@@ -180,89 +182,59 @@ document.getElementById('addStagiaireBtn').addEventListener('click', () => {
 });
 
 // =======================
-// Gestion de la signature du formateur
+// Affichage des signatures collectives
 // =======================
 
-document.getElementById('formateurSignBtn').addEventListener('click', () => {
-  document.getElementById('formateurSignatureModal').style.display = 'flex';
-  clearCanvas('formateurCanvas');
-  initSignatureCanvas('formateurCanvas');
-  document.getElementById('formateurName').textContent = document.getElementById('formateur')?.value || '';
-});
+document.getElementById('signAllBtn').addEventListener('click', () => {
+  const modal = document.getElementById('collectiveSignatureModal');
+  const container = document.getElementById('signatureListContainer');
+  modal.style.display = 'flex';
+  container.innerHTML = '';
+  container.style.display = 'grid';
+  container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
+  container.style.gap = '10px';
 
-document.getElementById('saveFormateurSignature').addEventListener('click', () => {
-  const canvas = document.getElementById('formateurCanvas');
-  const dataURL = canvas.toDataURL();
-  const container = document.getElementById('formateurSignature');
-  container.style.display = 'block';
-  container.innerHTML = `<img src="${dataURL}" alt="Signature formateur" style="max-width:120px;" />`;
-  closeModal();
-  afficherBoutonQuitter();
-});
+  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
+  rows.forEach(row => {
+    const nom = row.children[0].textContent;
+    const present = row.querySelector('.presence-checkbox')?.checked;
 
-// =======================
-// Importation des stagiaires depuis Excel
-// =======================
+    const bloc = document.createElement('div');
+    bloc.className = 'bloc-stagiaire';
+    bloc.style.border = '1px solid #ccc';
+    bloc.style.padding = '10px';
+    bloc.style.borderRadius = '6px';
+    bloc.style.background = '#f9f9f9';
+    bloc.style.textAlign = 'center';
 
-document.getElementById('excelFile').addEventListener('change', function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
+    const titre = document.createElement('p');
+    titre.innerHTML = `<strong>${nom}</strong>`;
+    bloc.appendChild(titre);
 
-  const reader = new FileReader();
-  reader.onload = function (event) {
-    try {
-      const data = new Uint8Array(event.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const signaturePreview = document.createElement('div');
+    signaturePreview.className = 'signature-preview';
+    signaturePreview.style.marginBottom = '5px';
+    bloc.appendChild(signaturePreview);
 
-      const infoMap = {};
-      for (let i = 0; i < 9; i++) {
-        if (!rows[i] || rows[i].length < 2) continue;
-        const key = normalize(rows[i][0]);
-        const value = rows[i][1];
-        if (key) infoMap[key] = value;
-      }
-
-      document.getElementById('intitule').value = infoMap['intituledeformation'] || '';
-      document.getElementById('date').value = infoMap['date'] || '';
-      document.getElementById('adresse').value = infoMap['lieu'] || '';
-      document.getElementById('horaire').value = infoMap['horaire'] || '';
-      document.getElementById('formateur').value = infoMap['formateur'] || '';
-
-      const headerRowIndex = rows.findIndex(row => row?.some(cell => typeof cell === 'string' && normalize(cell).includes('stagiaire')));
-      if (headerRowIndex === -1) return;
-      const headers = rows[headerRowIndex].map(h => normalize(h));
-      const stagiaires = rows.slice(headerRowIndex + 1);
-
-      const tbody = document.querySelector('#stagiairesTable tbody');
-      tbody.innerHTML = '';
-
-      stagiaires.forEach(row => {
-        if (!row || row.length < 2 || !row[0]) return;
-        const data = {};
-        headers.forEach((h, i) => data[h] = row[i] || '');
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${data['stagiaire']}</td>
-          <td>${data['email']}</td>
-          <td class="centered"><input type="checkbox" class="presence-checkbox" checked /></td>
-          <td class="signature-stagiaire"></td>
-          <td>
-            <button class="sign-btn">Signer en présentiel</button>
-            <button class="email-btn">Envoyer par mail</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('infoPresence').style.display = tbody.children.length > 0 ? 'block' : 'none';
-      attachSignatureButtons();
-      updateFormateurButtonState();
-    } catch (err) {
-      console.error("Erreur de lecture Excel:", err);
+    if (present) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Signer';
+      btn.className = 'sign-btn-collective';
+      btn.onclick = () => {
+        currentCollectiveSignatureTarget = signaturePreview;
+        document.getElementById('collectiveSignatureModal').style.display = 'none';
+        document.getElementById('signatureModal').style.display = 'flex';
+        clearCanvas('signatureCanvas');
+        initSignatureCanvas('signatureCanvas');
+        document.getElementById('stagiaireName').textContent = nom;
+      };
+      bloc.appendChild(btn);
+    } else {
+      signaturePreview.textContent = '❌ Absent';
     }
-  };
-  reader.readAsArrayBuffer(file);
+
+    container.appendChild(bloc);
+  });
 });
 
 // =======================
