@@ -232,7 +232,23 @@ document.getElementById('formateurSignBtn').addEventListener('click', () => {
   document.getElementById('formateurSignatureModal').style.display = 'flex';
   clearCanvas('formateurCanvas');
   initSignatureCanvas('formateurCanvas');
+
+  // Ajout du nom du formateur si nécessaire
+  const nomFormateur = document.getElementById('formateur')?.value || '';
+  const formateurNameElem = document.getElementById('formateurName');
+  if (formateurNameElem) {
+    formateurNameElem.textContent = nomFormateur;
+  }
 });
+
+// Tout effacer dans la signature collective
+const clearAllButton = document.getElementById('clearCollectiveSignature');
+if (clearAllButton) {
+  clearAllButton.addEventListener('click', () => {
+    const container = document.getElementById('signatureListContainer');
+    container.innerHTML = '';
+  });
+}
 
 // =======================
 // Exportation en PDF
