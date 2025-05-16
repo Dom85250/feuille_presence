@@ -46,7 +46,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       const infoMap = {};
 
       // === Lecture des champs haut du tableau (0 à 14) ===
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 9; i++) {
         if (!rows[i] || rows[i].length < 2) continue;
         const key = normalize(rows[i][0]);
         const value = rows[i][1];
