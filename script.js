@@ -158,7 +158,7 @@ function addStagiaireRow(stagiaire = '', email = '') {
   tr.innerHTML = `
     <td>${stagiaire}</td>
     <td>${email}</td>
-    <td class="centered"><input type="checkbox" class="presence-checkbox" /></td>
+    <td class="centered"><input type="checkbox" class="presence-checkbox" checked /></td>
     <td class="signature-stagiaire"></td>
     <td>
       <button class="sign-btn">Signer en présentiel</button>
