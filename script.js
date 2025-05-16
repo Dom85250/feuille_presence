@@ -25,7 +25,7 @@ const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").t
 const infoMap = {};
 
 
-for (let i = 5; i <= 13; i++) {
+for (let i = 1; i <= 9; i++) {
   if (!rows[i] || rows[i].length < 2) continue; // ignore les lignes vides ou incomplètes
   const key = normalize(rows[i][0]);
   const value = rows[i][1];
