@@ -162,6 +162,16 @@ document.getElementById('saveSignature').addEventListener('click', () => {
     const cell = currentRow.querySelector('.signature-stagiaire');
     if (cell) {
       cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+    }
+    currentRow = null;
+    closeModal();
+    updateFormateurButtonState();
+  }
+});
+  } else if (currentRow) {
+    const cell = currentRow.querySelector('.signature-stagiaire');
+    if (cell) {
+      cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
       updateFormateurButtonState();
     }
     closeModal();
@@ -195,6 +205,22 @@ document.getElementById('addStagiaireBtn').addEventListener('click', () => {
 // =======================
 
 document.getElementById('signAllBtn').addEventListener('click', () => {
+  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
+  let tousSignes = true;
+
+  rows.forEach(row => {
+    const present = row.querySelector('.presence-checkbox')?.checked;
+    const signature = row.querySelector('.signature-stagiaire img');
+    if (present && !signature) {
+      tousSignes = false;
+    }
+  });
+
+  if (tousSignes) {
+    alert("✅ Tous les stagiaires présents ont déjà signé.");
+    return;
+  }
+
   const modal = document.getElementById('collectiveSignatureModal');
   const container = document.getElementById('signatureListContainer');
   modal.style.display = 'flex';
@@ -203,7 +229,6 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
   container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
   container.style.gap = '10px';
 
-  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
   rows.forEach(row => {
     const nom = row.children[0].textContent;
     const present = row.querySelector('.presence-checkbox')?.checked;
@@ -225,25 +250,32 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
     signaturePreview.style.marginBottom = '5px';
     bloc.appendChild(signaturePreview);
 
+    const alreadySigned = row.querySelector('.signature-stagiaire img');
+
     if (present) {
-      const btn = document.createElement('button');
-      btn.textContent = 'Signer';
-      btn.className = 'sign-btn-collective';
-      btn.onclick = () => {
-        currentCollectiveSignatureTarget = signaturePreview;
-        document.getElementById('collectiveSignatureModal').style.display = 'none';
-        document.getElementById('signatureModal').style.display = 'flex';
-        clearCanvas('signatureCanvas');
-        initSignatureCanvas('signatureCanvas');
-        document.getElementById('stagiaireName').textContent = nom;
-      };
-      bloc.appendChild(btn);
+      if (alreadySigned) {
+        signaturePreview.innerHTML = alreadySigned.outerHTML;
+      } else {
+        const btn = document.createElement('button');
+        btn.textContent = 'Signer';
+        btn.className = 'sign-btn-collective';
+        btn.onclick = () => {
+          currentCollectiveSignatureTarget = signaturePreview;
+          document.getElementById('collectiveSignatureModal').style.display = 'none';
+          document.getElementById('signatureModal').style.display = 'flex';
+          clearCanvas('signatureCanvas');
+          initSignatureCanvas('signatureCanvas');
+          document.getElementById('stagiaireName').textContent = nom;
+        };
+        bloc.appendChild(btn);
+      }
     } else {
       signaturePreview.textContent = '❌ Absent';
     }
 
     container.appendChild(bloc);
   });
+});
 });
 
 // =======================
