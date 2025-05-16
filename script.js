@@ -24,7 +24,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 const infoMap = {};
 
-for (let i = 1; i <= 6; i++) {
+for (let i = 1; i <= 9; i++) {
   const rawKey = rows[i]?.[0];
   const key = normalize(rawKey);
   const value = rows[i]?.[1];
