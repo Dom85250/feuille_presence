@@ -146,9 +146,18 @@ document.getElementById('saveSignature').addEventListener('click', () => {
 
   if (currentCollectiveSignatureTarget) {
     currentCollectiveSignatureTarget.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+
+    const nom = document.getElementById('stagiaireName').textContent;
+    document.querySelectorAll('#stagiairesTable tbody tr').forEach(row => {
+      if (row.children[0].textContent.trim() === nom.trim()) {
+        row.querySelector('.signature-stagiaire').innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+      }
+    });
+
     currentCollectiveSignatureTarget = null;
     document.getElementById('signatureModal').style.display = 'none';
     document.getElementById('collectiveSignatureModal').style.display = 'flex';
+    updateFormateurButtonState();
   } else if (currentRow) {
     const cell = currentRow.querySelector('.signature-stagiaire');
     if (cell) {
@@ -244,13 +253,20 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
 function attachSignatureButtons() {
   document.querySelectorAll('.sign-btn').forEach(button => {
     button.onclick = (e) => {
-      currentRow = e.target.closest('tr');
+      const row = e.target.closest('tr');
+      const isPresent = row.querySelector('.presence-checkbox')?.checked;
+      if (!isPresent) return alert("Ce stagiaire est absent et ne peut pas signer.");
+      currentRow = row;
       const nom = currentRow.children[0].textContent;
       document.getElementById('stagiaireName').textContent = nom;
       document.getElementById('signatureModal').style.display = 'flex';
       clearCanvas('signatureCanvas');
       initSignatureCanvas('signatureCanvas');
     };
+  });
+
+  document.querySelectorAll('.presence-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', updateFormateurButtonState);
   });
 }
 
