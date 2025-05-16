@@ -69,6 +69,16 @@ function clearCanvas(canvasId) {
 }
 
 // =======================
+// Fermeture de modale
+// =======================
+
+function closeModal() {
+  document.getElementById('signatureModal').style.display = 'none';
+  document.getElementById('formateurSignatureModal').style.display = 'none';
+  document.getElementById('collectiveSignatureModal').style.display = 'none';
+}
+
+// =======================
 // Importation fichier Excel
 // =======================
 
@@ -131,39 +141,28 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         return;
       }
 
-      console.log("✅ Ligne d'en-tête trouvée (index " + headerRowIndex + ") :", headers);
-
       const normalizedHeaders = headers.map(h => normalize(h));
-      console.log("🔍 En-têtes normalisés :", normalizedHeaders);
-
       const stagiaires = rows.slice(headerRowIndex + 1);
       const tbody = document.querySelector('#stagiairesTable tbody');
       tbody.innerHTML = '';
 
       stagiaires.forEach((row, index) => {
-        if (!row || row.length < 2 || !row[0]) {
-          console.warn(`⛔ Ligne ${index + headerRowIndex + 2} ignorée (vide ou incomplète) :`, row);
-          return;
-        }
+        if (!row || row.length < 2 || !row[0]) return;
 
         const stagiaire = {};
         normalizedHeaders.forEach((header, i) => {
           stagiaire[header] = row[i] || '';
         });
 
-        console.log(`📌 Stagiaire ligne ${index + headerRowIndex + 2} :`, stagiaire);
-        console.log("Clés disponibles :", Object.keys(stagiaire));
-
-        if (!stagiaire['stagiaire']) {
-          console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + headerRowIndex + 2}`);
-          return;
-        }
+        if (!stagiaire['stagiaire']) return;
 
         addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
       });
 
       const infoPresence = document.getElementById('infoPresence');
-      infoPresence.style.display = tbody.children.length > 0 ? 'block' : 'none';
+      if (infoPresence) {
+        infoPresence.style.display = tbody.children.length > 0 ? 'block' : 'none';
+      }
 
     } catch (error) {
       console.error("💥 Erreur pendant le traitement du fichier Excel :", error);
@@ -210,6 +209,10 @@ function attachSignatureButtons() {
     button.addEventListener('click', (e) => {
       const row = e.target.closest('tr');
       currentRow = row;
+
+      const nomStagiaire = row.children[0].textContent;
+      document.getElementById('stagiaireName').textContent = nomStagiaire;
+
       document.getElementById('signatureModal').style.display = 'flex';
       clearCanvas('signatureCanvas');
       initSignatureCanvas('signatureCanvas');
