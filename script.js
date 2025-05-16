@@ -1,89 +1,88 @@
 // =======================
-// Partie 1 : Traitement des lignes de données
+// Fonctions utilitaires
 // =======================
-if (!rows[i] || rows[i].length < 2) continue; // ignore les lignes vides ou incomplètes
-const key = normalize(rows[i][0]);
-const value = rows[i][1];
-if (key) infoMap[key] = value;
+const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+function attachSignatureButtons() {
+  const buttons = document.querySelectorAll('.sign-btn');
+  buttons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      currentRow = row;
+      document.getElementById('signatureModal').style.display = 'flex';
+      clearCanvas();
+    });
+  });
+}
+
+function clearCanvas() {
+  const canvas = document.getElementById('signatureCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
 }
 
 // =======================
-// Partie 2 : Affichage des clés et valeurs extraites
+// Importation fichier Excel
 // =======================
-console.log("Clés détectées :", Object.keys(infoMap));
-console.log("Valeurs lues :", infoMap);
+document.getElementById('fileInput').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
 
-// =======================
-// Partie 3 : Remplissage des champs du formulaire
-// =======================
-document.getElementById('intitule').value = infoMap['intitule de formation'] || '';
-document.getElementById('date').value = infoMap['date'] || '';
-document.getElementById('adresse').value = infoMap['lieu'] || '';
-document.getElementById('horaire').value = infoMap['horaire'] || '';
-document.getElementById('formateur').value = infoMap['formateur'] || '';
+  reader.onload = function (event) {
+    const data = new Uint8Array(event.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-// =======================
-// Partie 4 : Lecture du nom et chemin du fichier PDF
-// =======================
-nomFichier = infoMap['nom fichier pdf'] || '';
-cheminFichier = infoMap['chemin enregistrement pdf'] || '';
+    const infoMap = {};
 
-// =======================
-// Partie 5 : Lecture des stagiaires à partir de la ligne 16
-// =======================
-const headers = rows[15]; // Ligne des en-têtes
-const stagiaires = rows.slice(16); // Lignes suivantes = données
+    for (let i = 0; i < rows.length; i++) {
+      if (!rows[i] || rows[i].length < 2) continue;
+      const key = normalize(rows[i][0]);
+      const value = rows[i][1];
+      if (key) infoMap[key] = value;
+    }
 
-// =======================
-// Partie 6 : Réinitialisation du tableau HTML des stagiaires
-// =======================
-const tbody = document.querySelector('#stagiairesTable tbody');
-tbody.innerHTML = '';
+    document.getElementById('intitule').value = infoMap['intitule de formation'] || '';
+    document.getElementById('date').value = infoMap['date'] || '';
+    document.getElementById('adresse').value = infoMap['lieu'] || '';
+    document.getElementById('horaire').value = infoMap['horaire'] || '';
+    document.getElementById('formateur').value = infoMap['formateur'] || '';
 
-// =======================
-// Partie 7 : Traitement des données des stagiaires
-// =======================
-stagiaires.forEach(row => {
-  if (row.length === 0 || !row[0]) return; // ignorer les lignes vides
-  const stagiaire = {};
-  headers.forEach((header, i) => {
-    stagiaire[header?.trim()] = row[i] || '';
+    nomFichier = infoMap['nom fichier pdf'] || '';
+    cheminFichier = infoMap['chemin enregistrement pdf'] || '';
 
-    console.log("Stagiaire traité :", stagiaire);
-    console.log("Nom :", stagiaire['stagiaire'], "| Email :", stagiaire['email']);
-  });
+    const headers = rows[15];
+    const normalizedHeaders = headers.map(h => normalize(h));
+    const stagiaires = rows.slice(16);
 
-  // =======================
-  // Partie 8 : Normalisation des en-têtes et ajout des stagiaires
-  // =======================
-  const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-  const normalizedHeaders = headers.map(h => normalize(h));
+    const tbody = document.querySelector('#stagiairesTable tbody');
+    tbody.innerHTML = '';
 
-  stagiaires.forEach(row => {
-    if (!row || row.length < 2 || !row[0]) return;
-    const stagiaire = {};
-    normalizedHeaders.forEach((header, i) => {
-      stagiaire[header] = row[i] || '';
+    stagiaires.forEach(row => {
+      if (!row || row.length < 2 || !row[0]) return;
+      const stagiaire = {};
+      normalizedHeaders.forEach((header, i) => {
+        stagiaire[header] = row[i] || '';
+      });
+      addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
     });
-    addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
+  };
 
-    console.log("En-têtes détectés :", headers);
-    console.log("Nombre de stagiaires détectés :", stagiaires.length);
-    console.log("Première ligne brute :", stagiaires[0]);
-  });
+  reader.readAsArrayBuffer(file);
 });
 
 // =======================
-// Partie 9 : Attachement des boutons de signature
+// Ajout d’un stagiaire manuellement
 // =======================
-attachSignatureButtons();
-};
-reader.readAsArrayBuffer(file);
+document.getElementById('addStagiaireBtn').addEventListener('click', () => {
+  addStagiaireRow();
 });
 
-// =======================
-// Partie 10 : Fonction d'ajout d'une ligne de stagiaire dans le tableau
-// =======================
 function addStagiaireRow(stagiaire = '', email = '') {
   const tbody = document.querySelector('#stagiairesTable tbody');
   const tr = document.createElement('tr');
@@ -101,16 +100,10 @@ function addStagiaireRow(stagiaire = '', email = '') {
   attachSignatureButtons();
   updateFormateurButtonState();
 }
-// =======================
-// Partie 2 : Gestion des modales et des signatures
-// =======================
 
-// Fermeture de toutes les modales
-function closeModal() {
-  document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
-}
-
-// Sauvegarde de la signature du stagiaire
+// =======================
+// Gestion des signatures
+// =======================
 document.getElementById('saveSignature').addEventListener('click', () => {
   const dataURL = signatureCanvas.toDataURL();
   const cell = currentRow.querySelector('.signature-stagiaire');
@@ -119,18 +112,11 @@ document.getElementById('saveSignature').addEventListener('click', () => {
   updateFormateurButtonState();
 });
 
-// Ajout d’un nouveau stagiaire
-document.getElementById('addStagiaireBtn').addEventListener('click', () => {
-  addStagiaireRow();
-});
-
-// Ouverture de la modale de signature du formateur
 document.getElementById('formateurSignBtn').addEventListener('click', () => {
   document.getElementById('formateurSignatureModal').style.display = 'flex';
   clearCanvas();
 });
 
-// Sauvegarde de la signature du formateur
 document.getElementById('saveFormateurSignature').addEventListener('click', () => {
   const dataURL = formateurCanvas.toDataURL();
   const cell = document.getElementById('formateurSignature');
@@ -138,9 +124,6 @@ document.getElementById('saveFormateurSignature').addEventListener('click', () =
   closeModal();
 });
 
-// =======================
-// Partie 3 : Activation du bouton de signature formateur
-// =======================
 function updateFormateurButtonState() {
   const rows = document.querySelectorAll('#stagiairesTable tbody tr');
   const allSigned = Array.from(rows).every(row => {
@@ -152,36 +135,7 @@ function updateFormateurButtonState() {
 }
 
 // =======================
-// Partie 4 : Signature collective des stagiaires présents
-// =======================
-document.getElementById('signAllBtn').addEventListener('click', () => {
-  const modal = document.getElementById('collectiveSignatureModal');
-  const container = document.getElementById('signatureListContainer');
-  container.innerHTML = '';
-  modal.style.display = 'flex';
-
-  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
-  rows.forEach(row => {
-    const stagiaire = row.children[0].textContent;
-    const present = row.querySelector('.presence-checkbox').checked;
-    const div = document.createElement('div');
-    div.style.marginBottom = '20px';
-
-    if (present) {
-      div.innerHTML = `
-        <strong>${stagiaire}</strong><br/>
-        <canvas width="300" height="100" style="border:1px solid #ccc;"></canvas>
-      `;
-    } else {
-      div.innerHTML = `<strong>${stagiaire}</strong> — <em>Absent</em>`;
-    }
-
-    container.appendChild(div);
-  });
-});
-
-// =======================
-// Partie 5 : Exportation du PDF avec les données et signatures
+// Exportation en PDF
 // =======================
 document.getElementById('exportPDF').addEventListener('click', exportPDF);
 
