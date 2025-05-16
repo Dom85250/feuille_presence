@@ -1,45 +1,70 @@
 <!DOCTYPE html>
+<!-- Déclare le type de document HTML5 -->
 <link rel="icon" href="favicon.ico" type="image/x-icon">
-
+<!-- Spécifie l'icône affichée dans l'onglet du navigateur -->
 
 <html lang="fr">
+<!-- Déclare que le contenu de la page est en français -->
 <head>
   <meta charset="UTF-8" />
+  <!-- Encodage des caractères en UTF-8 pour supporter les caractères spéciaux -->
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Règle d'affichage responsive pour que la page s'adapte à toutes les tailles d'écrans -->
+
   <title>Feuille d'émargement</title>
+  <!-- Titre affiché dans l’onglet du navigateur -->
+
   <link rel="stylesheet" href="styles.css" />
+  <!-- Lien vers le fichier CSS externe pour le style de la page -->
 </head>
+
 <body>
   <h1>Feuille d'émargement</h1>
+  <!-- Titre principal de la page -->
 
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
+  <!-- Champ de type fichier permettant de charger un fichier Excel (.xls ou .xlsx) -->
 
   <form>
+    <!-- Formulaire contenant les informations de la formation -->
+
     <div class="form-group">
       <label for="intitule">Intitulé de la formation :</label>
       <textarea id="intitule" name="intitule" rows="2"></textarea>
+      <!-- Champ texte pour le nom de la formation -->
     </div>
+
     <div class="form-group">
       <label for="date">Date :</label>
       <input type="text" id="date" name="date" />
+      <!-- Champ texte pour la date -->
     </div>
+
     <div class="form-group">
       <label for="adresse">Lieu :</label>
       <textarea id="adresse" name="adresse" rows="2"></textarea>
+      <!-- Champ texte pour le lieu de la formation -->
     </div>
+
     <div class="form-group">
       <label for="formateur">Formateur :</label>
       <input type="text" id="formateur" name="formateur" />
+      <!-- Champ texte pour le nom du formateur -->
     </div>
+
     <div class="form-group">
       <label for="horaire">Horaire :</label>
       <input type="text" id="horaire" name="horaire" />
+      <!-- Champ texte pour les horaires de la session -->
     </div>
   </form>
 
+  <!-- Boutons pour ajouter un stagiaire et pour lancer la signature collective -->
   <button id="addStagiaireBtn">Ajouter un stagiaire manuellement</button>
   <button id="signAllBtn">Faire signer tous les stagiaires présents</button>
 
+  <!-- Tableau d'affichage des stagiaires -->
   <table id="stagiairesTable">
     <thead>
       <tr>
@@ -51,22 +76,30 @@
       </tr>
     </thead>
     <tbody></tbody>
+    <!-- Le contenu sera rempli dynamiquement via JavaScript -->
   </table>
 
+  <!-- Boutons en bas de page -->
   <button id="formateurSignBtn" disabled>Signer en tant que formateur</button>
+  <!-- Bouton désactivé par défaut, activé une fois tous les stagiaires présents ont signé -->
   <button id="exportPDF">Exporter en PDF</button>
+  <!-- Bouton pour générer un PDF à partir des données affichées -->
 
-  <!-- Modales -->
+  <!-- MODALES POUR LES SIGNATURES -->
+
+  <!-- Modale pour la signature d’un stagiaire -->
   <div id="signatureModal" class="modal">
     <div>
       <h2>Signature du stagiaire</h2>
       <p id="stagiaireName"></p>
       <canvas id="signatureCanvas" width="400" height="200"></canvas>
+      <!-- Canvas pour que le stagiaire signe à la souris ou tactile -->
       <button id="saveSignature">Sauvegarder la signature</button>
       <button onclick="closeModal()">Fermer</button>
     </div>
   </div>
 
+  <!-- Modale pour la signature du formateur -->
   <div id="formateurSignatureModal" class="modal">
     <div>
       <h2>Signature du formateur</h2>
@@ -76,6 +109,7 @@
     </div>
   </div>
 
+  <!-- Modale pour signature collective des stagiaires -->
   <div id="collectiveSignatureModal" class="modal">
     <div>
       <h2>Faire signer tous les stagiaires présents</h2>
@@ -83,16 +117,22 @@
       <button id="signInPerson">Présentiel</button>
       <button id="sendByEmail">Par mail</button>
       <div id="signatureListContainer" style="margin-top: 20px;"></div>
+      <!-- Container dynamique pour afficher les stagiaires à signer collectivement -->
       <button onclick="closeModal()">Fermer</button>
     </div>
   </div>
 
+  <!-- Zone cachée pour afficher la signature du formateur une fois enregistrée -->
   <div id="formateurSignature" style="display: none;"></div>
 
-  <!-- Librairies -->
+  <!-- Inclusion des bibliothèques nécessaires -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+  <!-- Librairie SheetJS pour lire les fichiers Excel -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+  <!-- Librairie jsPDF pour générer des fichiers PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+  <!-- Plugin jsPDF AutoTable pour gérer les tableaux dans le PDF -->
   <script src="script.js"></script>
+  <!-- Inclusion du script principal contenant toute la logique JS -->
 </body>
 </html>
