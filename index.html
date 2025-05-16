@@ -24,16 +24,14 @@
   <script src="script.js" defer></script>
 
   <!-- ======================= -->
-  <!-- Styles internes spécifiques aux modales -->
+  <!-- Styles internes spécifiques modales -->
   <!-- ======================= -->
   <style>
     .modal {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background-color: rgba(0, 0, 0, 0.5);
       justify-content: center;
       align-items: center;
@@ -63,12 +61,12 @@
   <h1>Feuille d'émargement</h1>
 
   <!-- ======================= -->
-  <!-- Import de fichier Excel -->
+  <!-- Import Excel -->
   <!-- ======================= -->
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
 
   <!-- ======================= -->
-  <!-- Formulaire de la session -->
+  <!-- Formulaire session -->
   <!-- ======================= -->
   <form>
     <div class="form-group">
@@ -100,7 +98,7 @@
   <button id="signAllBtn">Faire signer tous les stagiaires présents</button>
 
   <!-- ======================= -->
-  <!-- Tableau des stagiaires -->
+  <!-- Tableau stagiaires -->
   <!-- ======================= -->
   <table id="stagiairesTable">
     <thead>
@@ -120,7 +118,7 @@
   </div>
 
   <!-- ======================= -->
-  <!-- Signature formateur -->
+  <!-- Bouton signature formateur -->
   <!-- ======================= -->
   <button id="formateurSignBtn" disabled>Signer en tant que formateur</button>
   <p id="consigneFormateur" style="
@@ -137,7 +135,7 @@
   </p>
 
   <!-- ======================= -->
-  <!-- Modale : Signature stagiaire -->
+  <!-- Modale signature stagiaire -->
   <!-- ======================= -->
   <div id="signatureModal" class="modal">
     <div>
@@ -145,15 +143,15 @@
       <p id="stagiaireName" style="font-weight: bold; margin-bottom: 10px;"></p>
       <canvas id="signatureCanvas" width="400" height="200" style="border: 1px solid #aaa;"></canvas>
       <div style="margin-top: 10px;">
-        <button onclick="clearCanvas('signatureCanvas')">🪑 Effacer</button>
-        <button id="saveSignature">📎 Sauvegarder & Fermer</button>
+        <button onclick="clearCanvas('signatureCanvas')">🧹 Effacer</button>
+        <button id="saveSignature">💾 Sauvegarder & Fermer</button>
         <button onclick="closeModal()">❌ Fermer sans sauvegarder</button>
       </div>
     </div>
   </div>
 
   <!-- ======================= -->
-  <!-- Modale : Signature formateur -->
+  <!-- Modale signature formateur -->
   <!-- ======================= -->
   <div id="formateurSignatureModal" class="modal">
     <div>
@@ -161,15 +159,15 @@
       <p id="formateurName" style="font-weight: bold; margin-bottom: 10px;"></p>
       <canvas id="formateurCanvas" width="400" height="200" style="border: 1px solid #aaa;"></canvas>
       <div style="margin-top: 10px;">
-        <button onclick="clearCanvas('formateurCanvas')">🪑 Effacer</button>
-        <button id="saveFormateurSignature">📎 Sauvegarder & Fermer</button>
+        <button onclick="clearCanvas('formateurCanvas')">🧹 Effacer</button>
+        <button id="saveFormateurSignature">💾 Sauvegarder & Fermer</button>
         <button onclick="closeModal()">❌ Fermer sans sauvegarder</button>
       </div>
     </div>
   </div>
 
   <!-- ======================= -->
-  <!-- Modale : Signature collective -->
+  <!-- Modale signature collective -->
   <!-- ======================= -->
   <div id="collectiveSignatureModal" class="modal">
     <div>
@@ -180,13 +178,13 @@
       <button id="signInPerson">Présentiel</button>
       <button id="sendByEmail">Par mail</button>
       <div id="signatureListContainer" style="margin-top: 20px;"></div>
-      <button id="clearCollectiveSignature">🪑 Tout effacer</button>
+      <button id="clearCollectiveSignature">🧹 Tout effacer</button>
       <button onclick="closeModal()">Fermer</button>
     </div>
   </div>
 
   <!-- ======================= -->
-  <!-- Zone de signature visible formateur -->
+  <!-- Zone signature formateur affichée -->
   <!-- ======================= -->
   <div id="formateurSignature" style="display: none; margin-top: 10px;"></div>
 </body>
