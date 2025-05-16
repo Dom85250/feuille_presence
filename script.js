@@ -46,7 +46,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
       const infoMap = {};
 
-      // Partie 1 : Lecture des champs de la section haute
+      // === Lecture des champs haut du tableau (0 à 14) ===
       for (let i = 0; i < 15; i++) {
         if (!rows[i] || rows[i].length < 2) continue;
         const key = normalize(rows[i][0]);
@@ -57,7 +57,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         }
       }
 
-      // Partie 2 : Remplissage du formulaire HTML
+      // === Injection des champs dans le formulaire HTML ===
       document.getElementById('intitule').value = infoMap['intitule de formation'] || '';
       document.getElementById('date').value = infoMap['date'] || '';
       document.getElementById('adresse').value = infoMap['lieu'] || '';
@@ -67,35 +67,45 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       nomFichier = infoMap['nom fichier pdf'] || '';
       cheminFichier = infoMap['chemin enregistrement pdf'] || '';
 
-      // Partie 3 : Lecture des stagiaires à partir de la ligne 16
+      // === Lecture des en-têtes (ligne 16 = index 15) ===
       const headers = rows[15];
       if (!headers || headers.length < 2) {
-        console.error("En-têtes stagiaires non détectés en ligne 16.");
+        console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne 16.");
         return;
       }
 
-      console.log("En-têtes des stagiaires :", headers);
+      console.log("✅ En-têtes détectés :", headers);
 
       const normalizedHeaders = headers.map(h => normalize(h));
-      const stagiaires = rows.slice(16);
+      const stagiaires = rows.slice(16); // Lignes 17 et +
 
       const tbody = document.querySelector('#stagiairesTable tbody');
       tbody.innerHTML = '';
 
       stagiaires.forEach((row, index) => {
-        if (!row || row.length < 2 || !row[0]) return;
+        if (!row || row.length < 2 || !row[0]) {
+          console.warn(`⛔ Ligne ${index + 17} ignorée (vide ou incomplète) :`, row);
+          return;
+        }
 
         const stagiaire = {};
         normalizedHeaders.forEach((header, i) => {
           stagiaire[header] = row[i] || '';
         });
 
-        console.log(`Stagiaire ${index + 1} :`, stagiaire);
+        console.log(`📌 Stagiaire ligne ${index + 17} :`, stagiaire);
+
+        // Vérifie si les clés "stagiaire" et "email" sont bien présentes
+        if (!stagiaire['stagiaire']) {
+          console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + 17}`);
+          return;
+        }
+
         addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
       });
 
     } catch (error) {
-      console.error("Erreur lors du traitement du fichier Excel :", error);
+      console.error("💥 Erreur pendant le traitement du fichier Excel :", error);
     }
   };
 
