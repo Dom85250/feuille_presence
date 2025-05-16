@@ -170,13 +170,19 @@ document.getElementById('signInPerson').addEventListener('click', () => {
       const btn = document.createElement('button');
       btn.textContent = 'Signer';
       btn.className = 'sign-btn-collective';
-      btn.onclick = () => {
-        currentCollectiveSignatureTarget = signaturePreview;
-        document.getElementById('signatureModal').style.display = 'flex';
-        clearCanvas('signatureCanvas');
-        initSignatureCanvas('signatureCanvas');
-        document.getElementById('stagiaireName').textContent = nom;
-      };
+    btn.onclick = () => {
+  currentCollectiveSignatureTarget = signaturePreview;
+
+  // Ferme la modale collective AVANT d'ouvrir la signature
+  document.getElementById('collectiveSignatureModal').style.display = 'none';
+
+  // Ouvre la modale de signature
+  document.getElementById('signatureModal').style.display = 'flex';
+  clearCanvas('signatureCanvas');
+  initSignatureCanvas('signatureCanvas');
+  document.getElementById('stagiaireName').textContent = nom;
+};
+
       bloc.appendChild(btn);
     } else {
       signaturePreview.textContent = '❌ Absent';
