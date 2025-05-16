@@ -60,7 +60,18 @@ stagiaires.forEach(row => {
   headers.forEach((header, i) => {
     stagiaire[header?.trim()] = row[i] || '';
   });
-  addStagiaireRow(stagiaire['Stagiaire'], stagiaire['Email']);
+  const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const normalizedHeaders = headers.map(h => normalize(h));
+
+stagiaires.forEach(row => {
+  if (!row || row.length < 2 || !row[0]) return;
+  const stagiaire = {};
+  normalizedHeaders.forEach((header, i) => {
+    stagiaire[header] = row[i] || '';
+  });
+  addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
+});
+
 });
 
 
