@@ -24,12 +24,14 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 const infoMap = {};
 
-for (let i = 1; i <= 9; i++) {
-  const rawKey = rows[i]?.[0];
-  const key = normalize(rawKey);
-  const value = rows[i]?.[1];
+
+for (let i = 5; i <= 13; i++) {
+  if (!rows[i] || rows[i].length < 2) continue; // ignore les lignes vides ou incomplètes
+  const key = normalize(rows[i][0]);
+  const value = rows[i][1];
   if (key) infoMap[key] = value;
 }
+
 
 console.log("Clés détectées :", Object.keys(infoMap));
 console.log("Valeurs lues :", infoMap);
