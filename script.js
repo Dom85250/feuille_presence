@@ -7,8 +7,8 @@ function normalize(str) {
     .trim()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, '')     // Supprime accents
-    .replace(/[^a-z0-9]/g, '');          // Supprime tout sauf lettres/chiffres
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
 }
 
 // =======================
@@ -53,8 +53,8 @@ function initSignatureCanvas(canvasId) {
   canvas.addEventListener('mouseup', stopDrawing);
   canvas.addEventListener('mouseout', stopDrawing);
 
-  canvas.addEventListener('touchstart', startDrawing);
-  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchstart', startDrawing, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
   canvas.addEventListener('touchend', stopDrawing);
 }
 
@@ -76,6 +76,33 @@ function closeModal() {
   document.getElementById('signatureModal').style.display = 'none';
   document.getElementById('formateurSignatureModal').style.display = 'none';
   document.getElementById('collectiveSignatureModal').style.display = 'none';
+}
+
+// =======================
+// Mise à jour de l'état du bouton formateur
+// =======================
+
+function updateFormateurButtonState() {
+  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
+  let tousSignes = true;
+
+  rows.forEach(row => {
+    const present = row.querySelector('.presence-checkbox')?.checked;
+    const signature = row.querySelector('.signature-stagiaire img');
+    if (present && !signature) {
+      tousSignes = false;
+    }
+  });
+
+  const bouton = document.getElementById('formateurSignBtn');
+  const consigne = document.getElementById('consigneFormateur');
+  if (tousSignes) {
+    bouton.disabled = false;
+    if (consigne) consigne.style.display = 'none';
+  } else {
+    bouton.disabled = true;
+    if (consigne) consigne.style.display = 'block';
+  }
 }
 
 // =======================
@@ -106,7 +133,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         const value = rows[i][1];
         if (key) {
           infoMap[key] = value;
-          console.log(`Champ détecté : "${key}" => "${value}"`);
         }
       }
 
@@ -136,11 +162,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       const headers = rows[headerRowIndex];
       headers[0] = 'Stagiaire';
 
-      if (!headers || headers.length < 2) {
-        console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne " + (headerRowIndex + 1));
-        return;
-      }
-
       const normalizedHeaders = headers.map(h => normalize(h));
       const stagiaires = rows.slice(headerRowIndex + 1);
       const tbody = document.querySelector('#stagiairesTable tbody');
@@ -163,6 +184,8 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       if (infoPresence) {
         infoPresence.style.display = tbody.children.length > 0 ? 'block' : 'none';
       }
+
+      updateFormateurButtonState();
 
     } catch (error) {
       console.error("💥 Erreur pendant le traitement du fichier Excel :", error);
@@ -195,6 +218,7 @@ function addStagiaireRow(stagiaire = '', email = '') {
   `;
   tbody.appendChild(tr);
   attachSignatureButtons();
+  updateFormateurButtonState();
 }
 
 // =======================
@@ -226,6 +250,7 @@ document.getElementById('saveSignature').addEventListener('click', () => {
   const cell = currentRow.querySelector('.signature-stagiaire');
   cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
   closeModal();
+  updateFormateurButtonState();
 });
 
 document.getElementById('formateurSignBtn').addEventListener('click', () => {
@@ -233,7 +258,6 @@ document.getElementById('formateurSignBtn').addEventListener('click', () => {
   clearCanvas('formateurCanvas');
   initSignatureCanvas('formateurCanvas');
 
-  // Ajout du nom du formateur si nécessaire
   const nomFormateur = document.getElementById('formateur')?.value || '';
   const formateurNameElem = document.getElementById('formateurName');
   if (formateurNameElem) {
@@ -241,97 +265,10 @@ document.getElementById('formateurSignBtn').addEventListener('click', () => {
   }
 });
 
-// Tout effacer dans la signature collective
 const clearAllButton = document.getElementById('clearCollectiveSignature');
 if (clearAllButton) {
   clearAllButton.addEventListener('click', () => {
     const container = document.getElementById('signatureListContainer');
     container.innerHTML = '';
   });
-}
-
-// =======================
-// Exportation en PDF
-// =======================
-
-document.getElementById('exportPDF').addEventListener('click', exportPDF);
-
-async function exportPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  const centre = document.getElementById('centre')?.value || '';
-  const formation = document.getElementById('formation')?.value || '';
-  const intitule = document.getElementById('intitule')?.value || '';
-  const entreprise = document.getElementById('entreprise')?.value || '';
-  const adresse = document.getElementById('adresse')?.value || '';
-  const formateur = document.getElementById('formateur')?.value || '';
-  const date = document.getElementById('date')?.value || '';
-  const horaire = document.getElementById('horaire')?.value || '';
-  const formateurSignature = document.querySelector('#formateurSignature img')?.src;
-
-  doc.setFontSize(12);
-  doc.text(`Centre de formation : ${centre}`, 10, 10);
-  doc.text(`Formation : ${formation}`, 10, 20);
-  doc.text(`Intitulé : ${intitule}`, 10, 30);
-  doc.text(`Entreprise : ${entreprise}`, 10, 40);
-  doc.text(`Adresse : ${adresse}`, 10, 50);
-  doc.text(`Formateur : ${formateur}`, 10, 60);
-  doc.text(`Date : ${date}`, 10, 70);
-  doc.text(`Horaire : ${horaire}`, 10, 80);
-
-  const rows = [];
-  document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
-    const stagiaire = tr.children[0].textContent;
-    const email = tr.children[1].textContent;
-    const present = tr.querySelector('.presence-checkbox').checked ? 'Oui' : 'Non';
-    const signatureCell = tr.querySelector('.signature-stagiaire');
-    const signatureImg = signatureCell.querySelector('img')?.src || null;
-    rows.push([stagiaire, email, present, signatureImg]);
-  });
-
-  const tableData = rows.map(row => row.slice(0, 3));
-  doc.autoTable({
-    head: [['Stagiaire', 'Email', 'Présent']],
-    body: tableData,
-    startY: 90,
-  });
-
-  let yOffset = doc.lastAutoTable.finalY + 10;
-  for (let i = 0; i < rows.length; i++) {
-    const [stagiaire, , , signatureImg] = rows[i];
-    if (signatureImg?.startsWith("data:image")) {
-      const img = new Image();
-      img.src = signatureImg;
-      await new Promise((resolve) => {
-        img.onload = () => {
-          const imgWidth = 40;
-          const imgHeight = (img.height * imgWidth) / img.width;
-          doc.addImage(signatureImg, 'PNG', 20, yOffset, imgWidth, imgHeight);
-          doc.text(stagiaire, 70, yOffset + imgHeight / 2);
-          yOffset += imgHeight + 10;
-          resolve();
-        };
-        img.onerror = resolve;
-      });
-    }
-  }
-
-  if (formateurSignature?.startsWith("data:image")) {
-    const img = new Image();
-    img.src = formateurSignature;
-    await new Promise((resolve) => {
-      img.onload = () => {
-        const imgWidth = 40;
-        const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(formateurSignature, 'PNG', 20, yOffset + 10, imgWidth, imgHeight);
-        doc.text("Signature du formateur", 70, yOffset + 10 + imgHeight / 2);
-        resolve();
-      };
-      img.onerror = resolve;
-    });
-  }
-
-  const nomFinal = nomFichier || `feuille-emargement-${date}`;
-  doc.save(`${nomFinal}.pdf`);
 }
