@@ -16,36 +16,24 @@
       background-color: rgba(0, 0, 0, 0.5);
       justify-content: center;
       align-items: center;
-      animation: fadeIn 0.4s ease-in-out;
+      z-index: 1000;
     }
     .modal > div {
       background: white;
       padding: 20px;
       border-radius: 8px;
-      max-width: 500px;
+      max-width: 1000px;
       width: 90%;
-      animation: scaleIn 0.3s ease-out;
+      max-height: 90%;
+      overflow-y: auto;
     }
-    #confirmationFinale {
-      opacity: 0;
-      transition: opacity 0.6s ease;
-    }
-    #confirmationFinale.show {
-      opacity: 1;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes scaleIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+    .bloc-stagiaire {
+      box-sizing: border-box;
     }
   </style>
 </head>
 <body>
   <h1>Feuille d'émargement</h1>
-
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
 
   <form>
@@ -105,8 +93,6 @@
     ➤ Vous pourrez signer une fois que tous les stagiaires <strong>présents</strong> auront signé.
   </p>
 
-  <!-- MODALES POUR LES SIGNATURES -->
-
   <div id="signatureModal" class="modal">
     <div>
       <h2>Signature du stagiaire</h2>
@@ -135,7 +121,7 @@
 
   <div id="collectiveSignatureModal" class="modal">
     <div>
-      <h2>Faire signer tous les stagiaires présents</h2>
+      <h2 style="color: #003366; background-color: #e0e0ff; padding: 10px; border-radius: 4px;">Faire signer tous les stagiaires présents</h2>
       <p>Souhaitez-vous signer en présentiel ou envoyer par mail ?</p>
       <button id="signInPerson">Présentiel</button>
       <button id="sendByEmail">Par mail</button>
@@ -145,8 +131,9 @@
     </div>
   </div>
 
-  <div id="formateurSignature" style="display: none;"></div>
+  <div id="formateurSignature" style="display: none; margin-top: 10px;"></div>
 
+  <!-- Bibliothèques -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
