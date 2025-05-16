@@ -28,7 +28,7 @@ function closeModal() {
 // =======================
 // Importation fichier Excel
 // =======================
-document.getElementById('fileInput').addEventListener('change', function (e) {
+document.getElementById('excelFile').addEventListener('change', function (e) {
   const file = e.target.files[0];
   const reader = new FileReader();
 
