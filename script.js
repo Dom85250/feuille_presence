@@ -253,7 +253,6 @@ document.getElementById('formateurSignBtn').addEventListener('click', () => {
 });
 
 
-::contentReference[oaicite:25]{index=25}
  
 // =======================
 // Exportation en PDF
