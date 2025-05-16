@@ -2,6 +2,15 @@
 // Fonctions utilitaires
 // =======================
 
+function normalize(str) {
+  return str?.toString()
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, '')     // Supprime accents
+    .replace(/[^a-z0-9]/g, '');          // Supprime tout sauf lettres/chiffres
+}
+
 function attachSignatureButtons() {
   const buttons = document.querySelectorAll('.sign-btn');
   buttons.forEach(button => {
@@ -45,7 +54,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
       const infoMap = {};
 
-      // === Lecture des champs haut du tableau (0 à 14) ===
+      // === Lecture des champs haut du tableau (0 à 8) ===
       for (let i = 0; i < 9; i++) {
         if (!rows[i] || rows[i].length < 2) continue;
         const key = normalize(rows[i][0]);
@@ -66,64 +75,70 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       nomFichier = infoMap['nomfichierpdf'] || '';
       cheminFichier = infoMap['cheminenregistrementpdf'] || '';
 
-// === Lecture des en-têtes (ligne détectée dynamiquement) ===
+      // === Lecture des en-têtes (ligne détectée dynamiquement) ===
+      let headerRowIndex = -1;
+      for (let i = 10; i < rows.length; i++) {
+        const row = rows[i];
+        if (row && row.some(cell => typeof cell === 'string' && normalize(cell).includes('stagiaire'))) {
+          headerRowIndex = i;
+          break;
+        }
+      }
 
-let headerRowIndex = -1;
-for (let i = 10; i < rows.length; i++) {
-  const row = rows[i];
-  if (row && row.some(cell => typeof cell === 'string' && normalize(cell).includes('stagiaire'))) {
-    headerRowIndex = i;
-    break;
-  }
-}
+      if (headerRowIndex === -1) {
+        console.error("❌ Impossible de trouver la ligne d'en-tête des stagiaires.");
+        return;
+      }
 
-if (headerRowIndex === -1) {
-  console.error("❌ Impossible de trouver la ligne d'en-tête des stagiaires.");
-  return;
-}
+      const headers = rows[headerRowIndex];
+      headers[0] = 'Stagiaire'; // Sécurise au cas où le mot serait mal écrit
 
-const headers = rows[headerRowIndex];
-headers[0] = 'Stagiaire'; // Sécurise au cas où le mot serait mal écrit
+      if (!headers || headers.length < 2) {
+        console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne " + (headerRowIndex + 1));
+        return;
+      }
 
-if (!headers || headers.length < 2) {
-  console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne " + (headerRowIndex + 1));
-  return;
-}
+      console.log("✅ Ligne d'en-tête trouvée (index " + headerRowIndex + ") :", headers);
 
-console.log("✅ Ligne d'en-tête trouvée (index " + headerRowIndex + ") :", headers);
+      const normalizedHeaders = headers.map(h => normalize(h));
+      console.log("🔍 En-têtes normalisés :", normalizedHeaders);
 
-const normalizedHeaders = headers.map(h => normalize(h));
-console.log("🔍 En-têtes normalisés :", normalizedHeaders);
+      // === Lecture des stagiaires (lignes après la ligne d'en-tête) ===
+      const stagiaires = rows.slice(headerRowIndex + 1);
+      const tbody = document.querySelector('#stagiairesTable tbody');
+      tbody.innerHTML = '';
 
-// === Lecture des stagiaires (lignes après la ligne d'en-tête) ===
+      stagiaires.forEach((row, index) => {
+        if (!row || row.length < 2 || !row[0]) {
+          console.warn(`⛔ Ligne ${index + headerRowIndex + 2} ignorée (vide ou incomplète) :`, row);
+          return;
+        }
 
-const stagiaires = rows.slice(headerRowIndex + 1);
-const tbody = document.querySelector('#stagiairesTable tbody');
-tbody.innerHTML = '';
+        const stagiaire = {};
+        normalizedHeaders.forEach((header, i) => {
+          stagiaire[header] = row[i] || '';
+        });
 
-stagiaires.forEach((row, index) => {
-  if (!row || row.length < 2 || !row[0]) {
-    console.warn(`⛔ Ligne ${index + headerRowIndex + 2} ignorée (vide ou incomplète) :`, row);
-    return;
-  }
+        console.log(`📌 Stagiaire ligne ${index + headerRowIndex + 2} :`, stagiaire);
+        console.log("Clés disponibles :", Object.keys(stagiaire));
 
-  const stagiaire = {};
-  normalizedHeaders.forEach((header, i) => {
-    stagiaire[header] = row[i] || '';
-  });
+        // Vérifie si le champ 'stagiaire' existe et est non vide
+        if (!stagiaire['stagiaire']) {
+          console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + headerRowIndex + 2}`);
+          return;
+        }
 
-  console.log(`📌 Stagiaire ligne ${index + headerRowIndex + 2} :`, stagiaire);
-  console.log("Clés disponibles :", Object.keys(stagiaire));
+        // Affiche le stagiaire dans le tableau HTML (nom + email uniquement ici)
+        addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
+      });
 
-  // Vérifie si le champ 'stagiaire' existe et est non vide
-  if (!stagiaire['stagiaire']) {
-    console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + headerRowIndex + 2}`);
-    return;
-  }
-
-  // Affiche le stagiaire dans le tableau HTML (nom + email uniquement ici)
-  addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
-});
+      // Affiche le message conditionnel si des stagiaires ont été ajoutés
+      const infoPresence = document.getElementById('infoPresence');
+      if (tbody.children.length > 0) {
+        infoPresence.style.display = 'block';
+      } else {
+        infoPresence.style.display = 'none';
+      }
 
     } catch (error) {
       console.error("💥 Erreur pendant le traitement du fichier Excel :", error);
@@ -132,18 +147,6 @@ stagiaires.forEach((row, index) => {
 
   reader.readAsArrayBuffer(file);
 });
-
-// =======================
-// Fonction normalize robuste
-// =======================
-function normalize(str) {
-  return str?.toString()
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, '')     // Supprime accents
-    .replace(/[^a-z0-9]/g, '');          // Supprime tout sauf lettres/chiffres
-}
 
 // =======================
 // Ajout d’un stagiaire manuellement
@@ -173,6 +176,8 @@ function addStagiaireRow(stagiaire = '', email = '') {
 // =======================
 // Gestion des signatures
 // =======================
+let currentRow = null;
+
 document.getElementById('saveSignature').addEventListener('click', () => {
   const dataURL = signatureCanvas.toDataURL();
   const cell = currentRow.querySelector('.signature-stagiaire');
@@ -224,66 +229,6 @@ async function exportPDF() {
 
   doc.setFontSize(12);
   doc.text(`Centre de formation : ${centre}`, 10, 10);
-  doc.text(`Formation : ${formation}`, 10, 20);
-  doc.text(`Intitulé : ${intitule}`, 10, 30);
-  doc.text(`Entreprise : ${entreprise}`, 10, 40);
-  doc.text(`Adresse : ${adresse}`, 10, 50);
-  doc.text(`Formateur : ${formateur}`, 10, 60);
-  doc.text(`Date : ${date}`, 10, 70);
-  doc.text(`Horaire : ${horaire}`, 10, 80);
-
-  const rows = [];
-  document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
-    const stagiaire = tr.children[0].textContent;
-    const email = tr.children[1].textContent;
-    const present = tr.querySelector('.presence-checkbox').checked ? 'Oui' : 'Non';
-    const signatureCell = tr.querySelector('.signature-stagiaire');
-    const signatureImg = signatureCell.querySelector('img')?.src || null;
-    rows.push([stagiaire, email, present, signatureImg]);
-  });
-
-  const tableData = rows.map(row => row.slice(0, 3));
-  doc.autoTable({
-    head: [['Stagiaire', 'Email', 'Présent']],
-    body: tableData,
-    startY: 90,
-  });
-
-  let yOffset = doc.lastAutoTable.finalY + 10;
-  for (let i = 0; i < rows.length; i++) {
-    const [stagiaire, , , signatureImg] = rows[i];
-    if (signatureImg && signatureImg.startsWith("data:image")) {
-      const img = new Image();
-      img.src = signatureImg;
-      await new Promise((resolve) => {
-        img.onload = () => {
-          const imgWidth = 40;
-          const imgHeight = (img.height * imgWidth) / img.width;
-          doc.addImage(signatureImg, 'PNG', 20, yOffset, imgWidth, imgHeight);
-          doc.text(stagiaire, 70, yOffset + imgHeight / 2);
-          yOffset += imgHeight + 10;
-          resolve();
-        };
-        img.onerror = resolve;
-      });
-    }
-  }
-
-  if (formateurSignature && formateurSignature.startsWith("data:image")) {
-    const img = new Image();
-    img.src = formateurSignature;
-    await new Promise((resolve) => {
-      img.onload = () => {
-        const imgWidth = 40;
-        const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(formateurSignature, 'PNG', 20, yOffset + 10, imgWidth, imgHeight);
-        doc.text("Signature du formateur", 70, yOffset + 10 + imgHeight / 2);
-        resolve();
-      };
-      img.onerror = resolve;
-    });
-  }
-
-  const nomFinal = nomFichier || `feuille-emargement-${date}`;
-  doc.save(`${nomFinal}.pdf`);
-}
+  doc.text(`Formation
+::contentReference[oaicite:22]{index=22}
+ 
