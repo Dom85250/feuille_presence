@@ -58,14 +58,14 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       }
 
       // === Injection des champs dans le formulaire HTML ===
-      document.getElementById('intitule').value = infoMap['intitule de formation'] || '';
+      document.getElementById('intitule').value = infoMap['intituledeformation'] || '';
       document.getElementById('date').value = infoMap['date'] || '';
       document.getElementById('adresse').value = infoMap['lieu'] || '';
       document.getElementById('horaire').value = infoMap['horaire'] || '';
       document.getElementById('formateur').value = infoMap['formateur'] || '';
 
-      nomFichier = infoMap['nom fichier pdf'] || '';
-      cheminFichier = infoMap['chemin enregistrement pdf'] || '';
+      nomFichier = infoMap['nomfichierpdf'] || '';
+      cheminFichier = infoMap['cheminenregistrementpdf'] || '';
 
       // === Lecture des en-têtes (ligne 16 = index 15) ===
       const headers = rows[15];
@@ -77,8 +77,9 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       console.log("✅ En-têtes détectés :", headers);
 
       const normalizedHeaders = headers.map(h => normalize(h));
-      const stagiaires = rows.slice(16); // Lignes 17 et +
+      console.log("🔍 En-têtes normalisés :", normalizedHeaders);
 
+      const stagiaires = rows.slice(16); // Lignes 17 et +
       const tbody = document.querySelector('#stagiairesTable tbody');
       tbody.innerHTML = '';
 
@@ -94,13 +95,15 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         });
 
         console.log(`📌 Stagiaire ligne ${index + 17} :`, stagiaire);
+        console.log("Clés disponibles :", Object.keys(stagiaire));
 
-        // Vérifie si les clés "stagiaire" et "email" sont bien présentes
+        // Vérifie si le champ 'stagiaire' existe et est non vide
         if (!stagiaire['stagiaire']) {
           console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + 17}`);
           return;
         }
 
+        // Affiche le stagiaire dans le tableau HTML (nom + email uniquement ici)
         addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
       });
 
@@ -112,6 +115,17 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
   reader.readAsArrayBuffer(file);
 });
 
+// =======================
+// Fonction normalize robuste
+// =======================
+function normalize(str) {
+  return str?.toString()
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, '')     // Supprime accents
+    .replace(/[^a-z0-9]/g, '');          // Supprime tout sauf lettres/chiffres
+}
 
 // =======================
 // Ajout d’un stagiaire manuellement
