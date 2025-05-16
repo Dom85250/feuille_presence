@@ -21,19 +21,11 @@ function initSignatureCanvas(canvasId) {
   let drawing = false;
 
   function getX(e) {
-    if (e.touches && e.touches.length > 0) {
-      return e.touches[0].clientX - canvas.getBoundingClientRect().left;
-    } else {
-      return e.clientX - canvas.getBoundingClientRect().left;
-    }
+    return (e.touches?.[0]?.clientX ?? e.clientX) - canvas.getBoundingClientRect().left;
   }
 
   function getY(e) {
-    if (e.touches && e.touches.length > 0) {
-      return e.touches[0].clientY - canvas.getBoundingClientRect().top;
-    } else {
-      return e.clientY - canvas.getBoundingClientRect().top;
-    }
+    return (e.touches?.[0]?.clientY ?? e.clientY) - canvas.getBoundingClientRect().top;
   }
 
   function startDrawing(e) {
@@ -98,7 +90,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
       const infoMap = {};
 
-      // === Lecture des champs haut du tableau (0 à 8) ===
       for (let i = 0; i < 9; i++) {
         if (!rows[i] || rows[i].length < 2) continue;
         const key = normalize(rows[i][0]);
@@ -109,7 +100,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         }
       }
 
-      // === Injection des champs dans le formulaire HTML ===
       document.getElementById('intitule').value = infoMap['intituledeformation'] || '';
       document.getElementById('date').value = infoMap['date'] || '';
       document.getElementById('adresse').value = infoMap['lieu'] || '';
@@ -119,7 +109,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       nomFichier = infoMap['nomfichierpdf'] || '';
       cheminFichier = infoMap['cheminenregistrementpdf'] || '';
 
-      // === Lecture des en-têtes (ligne détectée dynamiquement) ===
       let headerRowIndex = -1;
       for (let i = 10; i < rows.length; i++) {
         const row = rows[i];
@@ -135,7 +124,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       }
 
       const headers = rows[headerRowIndex];
-      headers[0] = 'Stagiaire'; // Sécurise au cas où le mot serait mal écrit
+      headers[0] = 'Stagiaire';
 
       if (!headers || headers.length < 2) {
         console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne " + (headerRowIndex + 1));
@@ -147,7 +136,6 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       const normalizedHeaders = headers.map(h => normalize(h));
       console.log("🔍 En-têtes normalisés :", normalizedHeaders);
 
-      // === Lecture des stagiaires (lignes après la ligne d'en-tête) ===
       const stagiaires = rows.slice(headerRowIndex + 1);
       const tbody = document.querySelector('#stagiairesTable tbody');
       tbody.innerHTML = '';
@@ -166,23 +154,16 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
         console.log(`📌 Stagiaire ligne ${index + headerRowIndex + 2} :`, stagiaire);
         console.log("Clés disponibles :", Object.keys(stagiaire));
 
-        // Vérifie si le champ 'stagiaire' existe et est non vide
         if (!stagiaire['stagiaire']) {
           console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + headerRowIndex + 2}`);
           return;
         }
 
-        // Affiche le stagiaire dans le tableau HTML (nom + email uniquement ici)
         addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
       });
 
-      // Affiche le message conditionnel si des stagiaires ont été ajoutés
       const infoPresence = document.getElementById('infoPresence');
-      if (tbody.children.length > 0) {
-        infoPresence.style.display = 'block';
-      } else {
-        infoPresence.style.display = 'none';
-      }
+      infoPresence.style.display = tbody.children.length > 0 ? 'block' : 'none';
 
     } catch (error) {
       console.error("💥 Erreur pendant le traitement du fichier Excel :", error);
@@ -215,7 +196,6 @@ function addStagiaireRow(stagiaire = '', email = '') {
   `;
   tbody.appendChild(tr);
   attachSignatureButtons();
-  updateFormateurButtonState();
 }
 
 // =======================
@@ -243,7 +223,6 @@ document.getElementById('saveSignature').addEventListener('click', () => {
   const cell = currentRow.querySelector('.signature-stagiaire');
   cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
   closeModal();
-  updateFormateurButtonState();
 });
 
 document.getElementById('formateurSignBtn').addEventListener('click', () => {
@@ -252,8 +231,6 @@ document.getElementById('formateurSignBtn').addEventListener('click', () => {
   initSignatureCanvas('formateurCanvas');
 });
 
-
- 
 // =======================
 // Exportation en PDF
 // =======================
@@ -304,7 +281,7 @@ async function exportPDF() {
   let yOffset = doc.lastAutoTable.finalY + 10;
   for (let i = 0; i < rows.length; i++) {
     const [stagiaire, , , signatureImg] = rows[i];
-    if (signatureImg && signatureImg.startsWith("data:image")) {
+    if (signatureImg?.startsWith("data:image")) {
       const img = new Image();
       img.src = signatureImg;
       await new Promise((resolve) => {
@@ -321,7 +298,7 @@ async function exportPDF() {
     }
   }
 
-  if (formateurSignature && formateurSignature.startsWith("data:image")) {
+  if (formateurSignature?.startsWith("data:image")) {
     const img = new Image();
     img.src = formateurSignature;
     await new Promise((resolve) => {
