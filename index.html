@@ -107,14 +107,19 @@
 
 
   <!-- Modale pour la signature du formateur -->
-  <div id="formateurSignatureModal" class="modal">
-    <div>
-      <h2>Signature du formateur</h2>
-      <canvas id="formateurCanvas" width="400" height="200"></canvas>
-      <button id="saveFormateurSignature">Sauvegarder la signature</button>
-      <button onclick="closeModal()">Fermer</button>
+ <div id="formateurSignatureModal" class="modal">
+  <div>
+    <h2>Signature du formateur</h2>
+    <p id="formateurName" style="font-weight: bold; margin-bottom: 10px;"></p>
+    <canvas id="formateurCanvas" width="400" height="200" style="border: 1px solid #aaa;"></canvas>
+    <div style="margin-top: 10px;">
+      <button onclick="clearCanvas('formateurCanvas')">🧹 Effacer</button>
+      <button id="saveFormateurSignature">💾 Sauvegarder & Fermer</button>
+      <button onclick="closeModal()">❌ Fermer sans sauvegarder</button>
     </div>
   </div>
+</div>
+
 
   <!-- Modale pour signature collective des stagiaires -->
   <div id="collectiveSignatureModal" class="modal">
@@ -123,7 +128,7 @@
       <p>Souhaitez-vous signer en présentiel ou envoyer par mail ?</p>
       <button id="signInPerson">Présentiel</button>
       <button id="sendByEmail">Par mail</button>
-      <div id="signatureListContainer" style="margin-top: 20px;"></div>
+      <div id="signatureListContainer" style="margin-top: 20px;"></div><button id="clearCollectiveSignature">🧹 Tout effacer</button>
       <!-- Container dynamique pour afficher les stagiaires à signer collectivement -->
       <button onclick="closeModal()">Fermer</button>
     </div>
