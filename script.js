@@ -30,51 +30,76 @@ function closeModal() {
 // =======================
 document.getElementById('excelFile').addEventListener('change', function (e) {
   const file = e.target.files[0];
+  if (!file) {
+    console.warn("Aucun fichier sélectionné.");
+    return;
+  }
+
   const reader = new FileReader();
 
   reader.onload = function (event) {
-    const data = new Uint8Array(event.target.result);
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    try {
+      const data = new Uint8Array(event.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    const infoMap = {};
+      const infoMap = {};
 
-    for (let i = 0; i < rows.length; i++) {
-      if (!rows[i] || rows[i].length < 2) continue;
-      const key = normalize(rows[i][0]);
-      const value = rows[i][1];
-      if (key) infoMap[key] = value;
-    }
+      // Lecture des champs clés/valeurs (partie haute du tableau Excel)
+      for (let i = 0; i < rows.length; i++) {
+        if (!rows[i] || rows[i].length < 2) continue;
+        const key = normalize(rows[i][0]);
+        const value = rows[i][1];
+        if (key) {
+          infoMap[key] = value;
+          console.log(`Champ détecté : "${key}" => "${value}"`);
+        }
+      }
 
-    document.getElementById('intitule').value = infoMap['intitule de formation'] || '';
-    document.getElementById('date').value = infoMap['date'] || '';
-    document.getElementById('adresse').value = infoMap['lieu'] || '';
-    document.getElementById('horaire').value = infoMap['horaire'] || '';
-    document.getElementById('formateur').value = infoMap['formateur'] || '';
+      // Remplissage des champs du formulaire HTML
+      document.getElementById('intitule').value = infoMap['intitule de formation'] || '';
+      document.getElementById('date').value = infoMap['date'] || '';
+      document.getElementById('adresse').value = infoMap['lieu'] || '';
+      document.getElementById('horaire').value = infoMap['horaire'] || '';
+      document.getElementById('formateur').value = infoMap['formateur'] || '';
 
-    nomFichier = infoMap['nom fichier pdf'] || '';
-    cheminFichier = infoMap['chemin enregistrement pdf'] || '';
+      nomFichier = infoMap['nom fichier pdf'] || '';
+      cheminFichier = infoMap['chemin enregistrement pdf'] || '';
 
-    const headers = rows[15];
-    const normalizedHeaders = headers.map(h => normalize(h));
-    const stagiaires = rows.slice(16);
+      // Lecture des stagiaires à partir de la ligne 16 (index 15)
+      const headers = rows[15];
+      if (!headers || headers.length < 2) {
+        console.error("En-têtes de stagiaires non détectés à la ligne 16.");
+        return;
+      }
 
-    const tbody = document.querySelector('#stagiairesTable tbody');
-    tbody.innerHTML = '';
+      console.log("En-têtes stagiaires détectés :", headers);
 
-    stagiaires.forEach(row => {
-      if (!row || row.length < 2 || !row[0]) return;
-      const stagiaire = {};
-      normalizedHeaders.forEach((header, i) => {
-        stagiaire[header] = row[i] || '';
+      const normalizedHeaders = headers.map(h => normalize(h));
+      const stagiaires = rows.slice(16);
+      const tbody = document.querySelector('#stagiairesTable tbody');
+      tbody.innerHTML = '';
+
+      stagiaires.forEach((row, index) => {
+        if (!row || row.length < 2 || !row[0]) return;
+        const stagiaire = {};
+        normalizedHeaders.forEach((header, i) => {
+          stagiaire[header] = row[i] || '';
+        });
+
+        console.log(`Stagiaire ${index + 1} :`, stagiaire);
+        addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
       });
-      addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
-    });
+
+    } catch (error) {
+      console.error("Erreur lors du traitement du fichier Excel :", error);
+    }
   };
 
   reader.readAsArrayBuffer(file);
 });
+
 
 // =======================
 // Ajout d’un stagiaire manuellement
