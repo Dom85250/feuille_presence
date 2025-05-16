@@ -7,7 +7,7 @@ function normalize(str) {
     .trim()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-\u036f]/g, '')
     .replace(/[^a-z0-9]/g, '');
 }
 
@@ -66,35 +66,22 @@ function closeModal() {
 }
 
 function afficherBoutonQuitter() {
-  let confirmation = document.getElementById('confirmationFinale');
-  if (!confirmation) {
-    confirmation = document.createElement('p');
-    confirmation.id = 'confirmationFinale';
-    confirmation.textContent = '✅ Toutes les signatures ont été enregistrées.';
-    confirmation.style.color = '#28a745';
-    confirmation.style.fontWeight = 'bold';
-    confirmation.style.marginTop = '20px';
-    confirmation.className = 'show';
-    document.body.appendChild(confirmation);
-    setTimeout(() => confirmation.classList.add('show'), 100);
+  let message = document.getElementById('messageFin');
+  if (!message) {
+    message = document.createElement('p');
+    message.id = 'messageFin';
+    message.innerHTML = '✅ Toutes les signatures ont été enregistrées. Vous pouvez maintenant fermer cette page.';
+    message.style.backgroundColor = '#d4edda';
+    message.style.borderLeft = '4px solid #28a745';
+    message.style.padding = '10px 12px';
+    message.style.marginTop = '20px';
+    message.style.fontSize = '0.95em';
+    message.style.color = '#155724';
+    message.style.fontWeight = '500';
+    message.style.boxShadow = '0 0 4px rgba(0,0,0,0.1)';
+    document.body.appendChild(message);
   }
-
-  let quitterBtn = document.getElementById('quitBtn');
-  if (!quitterBtn) {
-    quitterBtn = document.createElement('button');
-    quitterBtn.id = 'quitBtn';
-    quitterBtn.textContent = 'Quitter';
-    quitterBtn.style.marginTop = '20px';
-    quitterBtn.style.backgroundColor = '#d9534f';
-    quitterBtn.style.color = 'white';
-    quitterBtn.style.border = 'none';
-    quitterBtn.style.padding = '10px 20px';
-    quitterBtn.style.cursor = 'pointer';
-    quitterBtn.onclick = () => window.close();
-    document.body.appendChild(quitterBtn);
-  }
-  confirmation.style.display = 'block';
-  quitterBtn.style.display = 'inline-block';
+  message.style.display = 'block';
 }
 
 function updateFormateurButtonState() {
@@ -123,6 +110,8 @@ function updateFormateurButtonState() {
 let currentRow = null;
 let currentCollectiveSignatureTarget = null;
 
+// Ajout stagiaire manuel
+
 document.getElementById('addStagiaireBtn').addEventListener('click', () => {
   const tbody = document.querySelector('#stagiairesTable tbody');
   const tr = document.createElement('tr');
@@ -141,9 +130,19 @@ document.getElementById('addStagiaireBtn').addEventListener('click', () => {
   updateFormateurButtonState();
 });
 
+// Activation affichage stagiaires seulement après clic sur Présentiel
+
 document.getElementById('signAllBtn').addEventListener('click', () => {
+  document.getElementById('signatureListContainer').style.display = 'none';
+  document.getElementById('collectiveSignatureModal').style.display = 'flex';
+});
+
+document.getElementById('signInPerson').addEventListener('click', () => {
   const container = document.getElementById('signatureListContainer');
   container.innerHTML = '';
+  container.style.display = 'grid';
+  container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
+  container.style.gap = '10px';
 
   const rows = document.querySelectorAll('#stagiairesTable tbody tr');
   rows.forEach(row => {
@@ -154,8 +153,9 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
     bloc.className = 'bloc-stagiaire';
     bloc.style.border = '1px solid #ccc';
     bloc.style.padding = '10px';
-    bloc.style.marginBottom = '10px';
+    bloc.style.borderRadius = '6px';
     bloc.style.background = '#f9f9f9';
+    bloc.style.textAlign = 'center';
 
     const titre = document.createElement('p');
     titre.innerHTML = `<strong>${nom}</strong>`;
@@ -185,7 +185,7 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
     container.appendChild(bloc);
   });
 
-  document.getElementById('collectiveSignatureModal').style.display = 'flex';
+  container.style.display = 'grid';
 });
 
 document.getElementById('saveSignature').addEventListener('click', () => {
@@ -218,6 +218,7 @@ document.getElementById('saveFormateurSignature').addEventListener('click', () =
   const canvas = document.getElementById('formateurCanvas');
   const dataURL = canvas.toDataURL();
   const container = document.getElementById('formateurSignature');
+  container.style.display = 'block';
   container.innerHTML = `<img src="${dataURL}" alt="Signature formateur" style="max-width:120px;" />`;
   closeModal();
   afficherBoutonQuitter();
