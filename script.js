@@ -24,21 +24,22 @@ function initSignatureCanvas(canvasId) {
   }
 
   function startDrawing(e) {
-    e.preventDefault(); drawing = true;
+    if (e.cancelable) e.preventDefault();
+    drawing = true;
     ctx.beginPath();
     ctx.moveTo(getX(e), getY(e));
   }
 
   function draw(e) {
     if (!drawing) return;
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     ctx.lineTo(getX(e), getY(e));
     ctx.stroke();
   }
 
   function stopDrawing(e) {
     if (!drawing) return;
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     drawing = false;
   }
 
@@ -50,6 +51,7 @@ function initSignatureCanvas(canvasId) {
   canvas.addEventListener('touchmove', draw, { passive: false });
   canvas.addEventListener('touchend', stopDrawing);
 }
+
 
 // =======================
 // Réinitialisation des modales (non déplaçables)
@@ -81,6 +83,7 @@ function afficherBoutonQuitter() {
 // Variables globales
 // =======================
 let currentRow = null;
+document.getElementById('addStagiaireBtn').disabled = true;
 let currentCollectiveSignatureTarget = null;
 
 // =======================
@@ -391,6 +394,9 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       document.getElementById('infoPresence').style.display = tbody.children.length > 0 ? 'block' : 'none';
       attachSignatureButtons();
       updateFormateurButtonState();
+document.getElementById('addStagiaireBtn').disabled = false;
+document.getElementById('signAllBtn').disabled = false;
+
     } catch (err) {
       console.error("Erreur de lecture Excel:", err);
     }
