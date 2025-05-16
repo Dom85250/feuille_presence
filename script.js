@@ -4,53 +4,47 @@
 function normalize(str) {
   return str?.toString().trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 }
-
 // =======================
-// Initialisation fluide du canvas de signature (tactile & souris)
+// Initialisation du canvas de signature (précise souris & tactile)
 // =======================
 function initSignatureCanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
 
-  // Efface et initialise le fond blanc
+  // Réinitialise l’arrière-plan en blanc
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.strokeStyle = '#000';
   ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
   let drawing = false;
-  let lastX = 0, lastY = 0;
 
-  function getCoords(e) {
+  function getPos(e) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height)
     };
   }
 
   function start(e) {
     e.preventDefault();
     drawing = true;
-    const { x, y } = getCoords(e);
-    lastX = x;
-    lastY = y;
+    const { x, y } = getPos(e);
     ctx.beginPath();
     ctx.moveTo(x, y);
   }
 
-  function draw(e) {
+  function move(e) {
     if (!drawing) return;
     e.preventDefault();
-    const { x, y } = getCoords(e);
+    const { x, y } = getPos(e);
     ctx.lineTo(x, y);
     ctx.stroke();
-    lastX = x;
-    lastY = y;
   }
 
   function end(e) {
@@ -59,14 +53,16 @@ function initSignatureCanvas(canvasId) {
     drawing = false;
   }
 
-  canvas.addEventListener('mousedown', start);
-  canvas.addEventListener('mousemove', draw);
-  canvas.addEventListener('mouseup', end);
-  canvas.addEventListener('mouseout', end);
-
-  canvas.addEventListener('touchstart', start, { passive: false });
-  canvas.addEventListener('touchmove', draw, { passive: false });
-  canvas.addEventListener('touchend', end);
+  // Supprime les anciens écouteurs éventuels
+  canvas.replaceWith(canvas.cloneNode(true));
+  const cleanCanvas = document.getElementById(canvasId);
+  cleanCanvas.addEventListener('mousedown', start);
+  cleanCanvas.addEventListener('mousemove', move);
+  cleanCanvas.addEventListener('mouseup', end);
+  cleanCanvas.addEventListener('mouseout', end);
+  cleanCanvas.addEventListener('touchstart', start, { passive: false });
+  cleanCanvas.addEventListener('touchmove', move, { passive: false });
+  cleanCanvas.addEventListener('touchend', end);
 }
 
 // =======================
