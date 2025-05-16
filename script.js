@@ -9,58 +9,55 @@ function normalize(str) {
 // Initialisation du canvas de signature (compatible tactile & souris)
 // =======================
 function initSignatureCanvas(canvasId) {
-  const oldCanvas = document.getElementById(canvasId);
-  const newCanvas = oldCanvas.cloneNode(true);
-  oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
 
-  const ctx = newCanvas.getContext('2d');
-
-  // Fond blanc pour éviter fond transparent
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.strokeStyle = '#000';
   ctx.lineWidth = 2;
   let drawing = false;
 
-  function getPos(e) {
-    const rect = newCanvas.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-    return { x, y };
+  function getX(e) {
+    return (e.touches?.[0]?.clientX ?? e.clientX) - canvas.getBoundingClientRect().left;
   }
 
-  function start(e) {
+  function getY(e) {
+    return (e.touches?.[0]?.clientY ?? e.clientY) - canvas.getBoundingClientRect().top;
+  }
+
+  function startDrawing(e) {
     e.preventDefault();
     drawing = true;
-    const pos = getPos(e);
     ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
+    ctx.moveTo(getX(e), getY(e));
   }
 
-  function move(e) {
+  function draw(e) {
     if (!drawing) return;
     e.preventDefault();
-    const pos = getPos(e);
-    ctx.lineTo(pos.x, pos.y);
+    ctx.lineTo(getX(e), getY(e));
     ctx.stroke();
   }
 
-  function end(e) {
+  function stopDrawing(e) {
     if (!drawing) return;
     e.preventDefault();
     drawing = false;
   }
 
-  newCanvas.addEventListener('mousedown', start);
-  newCanvas.addEventListener('mousemove', move);
-  newCanvas.addEventListener('mouseup', end);
-  newCanvas.addEventListener('mouseout', end);
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing);
 
-  newCanvas.addEventListener('touchstart', start, { passive: false });
-  newCanvas.addEventListener('touchmove', move, { passive: false });
-  newCanvas.addEventListener('touchend', end);
+  canvas.addEventListener('touchstart', startDrawing, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
+  canvas.addEventListener('touchend', stopDrawing);
 }
+
 
 // =======================
 // Nettoyage du canvas
