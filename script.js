@@ -165,6 +165,27 @@ document.getElementById('saveSignature').addEventListener('click', () => {
 // Signature collective
 // =======================
 document.getElementById('signAllBtn').addEventListener('click', () => {
+  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
+  if (rows.length === 0) {
+    alert("Veuillez d'abord importer les stagiaires.");
+    return;
+  }
+
+  document.getElementById('signatureListContainer').innerHTML = '';
+  document.getElementById('collectiveSignatureModal').style.display = 'flex';
+});
+
+
+// =======================
+// Gestion de la signature collective (présentiel)
+// =======================
+
+// =======================
+// Signature collective
+// =======================
+document.getElementById('signAllBtn').addEventListener('click', () => {
+  const btn = document.getElementById('signAllBtn');
+  if (btn.disabled) return;
   document.getElementById('signatureListContainer').innerHTML = '';
   document.getElementById('collectiveSignatureModal').style.display = 'flex';
 });
@@ -172,7 +193,6 @@ document.getElementById('signAllBtn').addEventListener('click', () => {
 // =======================
 // Gestion de la signature collective (présentiel)
 // =======================
-
 document.getElementById('signInPerson').addEventListener('click', () => {
   const container = document.getElementById('signatureListContainer');
   container.innerHTML = '';
@@ -225,34 +245,55 @@ document.getElementById('signInPerson').addEventListener('click', () => {
   container.style.display = 'grid';
 });
 
+// =======================
+// Nettoyage automatique de l’ancienne poignée draggable si présente
+// =======================
+window.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('collectiveSignatureModal')?.querySelector('div');
+  if (modal) {
+    const header = modal.querySelector('div');
+    if (header && header.textContent.includes('Déplacer la fenêtre')) {
+      modal.removeChild(header);
+    }
+  }
+
+  // Désactive le bouton "Faire signer" tant que pas de stagiaires
+  const signBtn = document.getElementById('signAllBtn');
+  signBtn.disabled = true;
+});
+
+
 
 // =======================
-// Gestion du bouton "Signer en tant que formateur"
+// Mise à jour de l'état des boutons
 // =======================
-
-document.getElementById('formateurSignBtn').addEventListener('click', () => {
-  const allRows = document.querySelectorAll('#stagiairesTable tbody tr');
+function updateFormateurButtonState() {
+  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
   let tousSignes = true;
+  let auMoinsUnPresent = false;
 
-  allRows.forEach(row => {
+  rows.forEach(row => {
     const present = row.querySelector('.presence-checkbox')?.checked;
     const signature = row.querySelector('.signature-stagiaire img');
-    if (present && !signature) {
-      tousSignes = false;
+    if (present) {
+      auMoinsUnPresent = true;
+      if (!signature) tousSignes = false;
     }
   });
 
-  if (!tousSignes) {
-    alert("Tous les stagiaires présents n'ont pas encore signé.");
-    return;
-  }
+  const bouton = document.getElementById('formateurSignBtn');
+  const consigne = document.getElementById('consigneFormateur');
+  const collectiveBtn = document.getElementById('signAllBtn');
 
-  document.getElementById('formateurSignatureModal').style.display = 'flex';
-  clearCanvas('formateurCanvas');
-  initSignatureCanvas('formateurCanvas');
-  document.getElementById('formateurName').textContent =
-    document.getElementById('formateur')?.value || '';
-});
+  // Activer le bouton formateur uniquement si tous les présents ont signé
+  bouton.disabled = !tousSignes;
+
+  // Cacher ou afficher la consigne en fonction de l'état
+  if (consigne) consigne.style.display = tousSignes ? 'none' : 'block';
+
+  // Activer le bouton collectif uniquement s'il reste des signatures à faire
+  collectiveBtn.disabled = !auMoinsUnPresent || tousSignes;
+}
 
 
 // =======================
