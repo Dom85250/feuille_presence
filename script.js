@@ -79,6 +79,40 @@ function closeModal() {
 }
 
 // =======================
+// Affichage du bouton Quitter + confirmation
+// =======================
+
+function afficherBoutonQuitter() {
+  let confirmation = document.getElementById('confirmationFinale');
+  if (!confirmation) {
+    confirmation = document.createElement('p');
+    confirmation.id = 'confirmationFinale';
+    confirmation.textContent = '✅ Toutes les signatures ont été enregistrées.';
+    confirmation.style.color = '#28a745';
+    confirmation.style.fontWeight = 'bold';
+    confirmation.style.marginTop = '20px';
+    document.body.appendChild(confirmation);
+  }
+
+  let quitterBtn = document.getElementById('quitBtn');
+  if (!quitterBtn) {
+    quitterBtn = document.createElement('button');
+    quitterBtn.id = 'quitBtn';
+    quitterBtn.textContent = 'Quitter';
+    quitterBtn.style.marginTop = '20px';
+    quitterBtn.style.backgroundColor = '#d9534f';
+    quitterBtn.style.color = 'white';
+    quitterBtn.style.border = 'none';
+    quitterBtn.style.padding = '10px 20px';
+    quitterBtn.style.cursor = 'pointer';
+    quitterBtn.onclick = () => window.close();
+    document.body.appendChild(quitterBtn);
+  }
+  confirmation.style.display = 'block';
+  quitterBtn.style.display = 'inline-block';
+}
+
+// =======================
 // Mise à jour de l'état du bouton formateur
 // =======================
 
