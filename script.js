@@ -66,17 +66,21 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       nomFichier = infoMap['nomfichierpdf'] || '';
       cheminFichier = infoMap['cheminenregistrementpdf'] || '';
 
-      // === Lecture des en-têtes (ligne 16 = index 15) ===
-      const headers = rows[15];
-      if (!headers || headers.length < 2) {
-        console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne 16.");
-        return;
-      }
+    // === Lecture des en-têtes (ligne 16 = index 15) ===
+const headers = rows[15];
+if (!headers || headers.length < 2) {
+  console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne 16.");
+  return;
+}
 
-      console.log("✅ En-têtes détectés :", headers);
+// 🛠️ Correction ici : forcer l'intitulé de la première colonne
+headers[0] = 'Stagiaire';
 
-      const normalizedHeaders = headers.map(h => normalize(h));
-      console.log("🔍 En-têtes normalisés :", normalizedHeaders);
+console.log("✅ En-têtes détectés :", headers);
+
+const normalizedHeaders = headers.map(h => normalize(h));
+console.log("🔍 En-têtes normalisés :", normalizedHeaders);
+
 
       const stagiaires = rows.slice(16); // Lignes 17 et +
       const tbody = document.querySelector('#stagiairesTable tbody');
