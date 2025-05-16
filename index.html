@@ -92,16 +92,19 @@
   <!-- MODALES POUR LES SIGNATURES -->
 
   <!-- Modale pour la signature d’un stagiaire -->
-  <div id="signatureModal" class="modal">
-    <div>
-      <h2>Signature du stagiaire</h2>
-      <p id="stagiaireName"></p>
-      <canvas id="signatureCanvas" width="400" height="200"></canvas>
-      <!-- Canvas pour que le stagiaire signe à la souris ou tactile -->
-      <button id="saveSignature">Sauvegarder la signature</button>
-      <button onclick="closeModal()">Fermer</button>
+<div id="signatureModal" class="modal">
+  <div>
+    <h2>Signature du stagiaire</h2>
+    <p id="stagiaireName" style="font-weight: bold; margin-bottom: 10px;"></p>
+    <canvas id="signatureCanvas" width="400" height="200" style="border: 1px solid #aaa;"></canvas>
+    <div style="margin-top: 10px;">
+      <button onclick="clearCanvas('signatureCanvas')">🧹 Effacer</button>
+      <button id="saveSignature">💾 Sauvegarder & Fermer</button>
+      <button onclick="closeModal()">❌ Fermer sans sauvegarder</button>
     </div>
   </div>
+</div>
+
 
   <!-- Modale pour la signature du formateur -->
   <div id="formateurSignatureModal" class="modal">
