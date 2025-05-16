@@ -1,15 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+  <!-- ======================= -->
+  <!-- Informations de base -->
+  <!-- ======================= -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feuille d'émargement</title>
+
+  <!-- ======================= -->
+  <!-- Styles et icône -->
+  <!-- ======================= -->
   <link rel="stylesheet" href="styles.css">
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-<script src="script.js" defer></script>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
+  <!-- ======================= -->
+  <!-- Bibliothèques externes -->
+  <!-- ======================= -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+  <script src="script.js" defer></script>
 
+  <!-- ======================= -->
+  <!-- Styles internes spécifiques aux modales -->
+  <!-- ======================= -->
   <style>
     .modal {
       display: none;
@@ -23,6 +39,7 @@
       align-items: center;
       z-index: 1000;
     }
+
     .modal > div {
       background: white;
       padding: 20px;
@@ -32,15 +49,27 @@
       max-height: 90%;
       overflow-y: auto;
     }
+
     .bloc-stagiaire {
       box-sizing: border-box;
     }
   </style>
 </head>
+
 <body>
+  <!-- ======================= -->
+  <!-- Titre principal -->
+  <!-- ======================= -->
   <h1>Feuille d'émargement</h1>
+
+  <!-- ======================= -->
+  <!-- Import de fichier Excel -->
+  <!-- ======================= -->
   <input type="file" id="excelFile" accept=".xlsx, .xls" />
 
+  <!-- ======================= -->
+  <!-- Formulaire de la session -->
+  <!-- ======================= -->
   <form>
     <div class="form-group">
       <label for="intitule">Intitulé de la formation :</label>
@@ -64,9 +93,15 @@
     </div>
   </form>
 
+  <!-- ======================= -->
+  <!-- Actions principales -->
+  <!-- ======================= -->
   <button id="addStagiaireBtn">Ajouter un stagiaire manuellement</button>
   <button id="signAllBtn">Faire signer tous les stagiaires présents</button>
 
+  <!-- ======================= -->
+  <!-- Tableau des stagiaires -->
+  <!-- ======================= -->
   <table id="stagiairesTable">
     <thead>
       <tr>
@@ -84,6 +119,9 @@
     ✅ Des stagiaires ont été ajoutés avec succès.
   </div>
 
+  <!-- ======================= -->
+  <!-- Signature formateur -->
+  <!-- ======================= -->
   <button id="formateurSignBtn" disabled>Signer en tant que formateur</button>
   <p id="consigneFormateur" style="
     background-color: #fff3cd;
@@ -98,49 +136,58 @@
     ➤ Vous pourrez signer une fois que tous les stagiaires <strong>présents</strong> auront signé.
   </p>
 
+  <!-- ======================= -->
+  <!-- Modale : Signature stagiaire -->
+  <!-- ======================= -->
   <div id="signatureModal" class="modal">
     <div>
       <h2>Signature du stagiaire</h2>
       <p id="stagiaireName" style="font-weight: bold; margin-bottom: 10px;"></p>
       <canvas id="signatureCanvas" width="400" height="200" style="border: 1px solid #aaa;"></canvas>
       <div style="margin-top: 10px;">
-        <button onclick="clearCanvas('signatureCanvas')">🧹 Effacer</button>
-        <button id="saveSignature">💾 Sauvegarder & Fermer</button>
+        <button onclick="clearCanvas('signatureCanvas')">🪑 Effacer</button>
+        <button id="saveSignature">📎 Sauvegarder & Fermer</button>
         <button onclick="closeModal()">❌ Fermer sans sauvegarder</button>
       </div>
     </div>
   </div>
 
+  <!-- ======================= -->
+  <!-- Modale : Signature formateur -->
+  <!-- ======================= -->
   <div id="formateurSignatureModal" class="modal">
     <div>
       <h2>Signature du formateur</h2>
       <p id="formateurName" style="font-weight: bold; margin-bottom: 10px;"></p>
       <canvas id="formateurCanvas" width="400" height="200" style="border: 1px solid #aaa;"></canvas>
       <div style="margin-top: 10px;">
-        <button onclick="clearCanvas('formateurCanvas')">🧹 Effacer</button>
-        <button id="saveFormateurSignature">💾 Sauvegarder & Fermer</button>
+        <button onclick="clearCanvas('formateurCanvas')">🪑 Effacer</button>
+        <button id="saveFormateurSignature">📎 Sauvegarder & Fermer</button>
         <button onclick="closeModal()">❌ Fermer sans sauvegarder</button>
       </div>
     </div>
   </div>
 
+  <!-- ======================= -->
+  <!-- Modale : Signature collective -->
+  <!-- ======================= -->
   <div id="collectiveSignatureModal" class="modal">
     <div>
-      <h2 style="color: #003366; background-color: #e0e0ff; padding: 10px; border-radius: 4px;">Faire signer tous les stagiaires présents</h2>
+      <h2 style="color: #003366; background-color: #e0e0ff; padding: 10px; border-radius: 4px;">
+        Faire signer tous les stagiaires présents
+      </h2>
       <p>Souhaitez-vous signer en présentiel ou envoyer par mail ?</p>
       <button id="signInPerson">Présentiel</button>
       <button id="sendByEmail">Par mail</button>
       <div id="signatureListContainer" style="margin-top: 20px;"></div>
-      <button id="clearCollectiveSignature">🧹 Tout effacer</button>
+      <button id="clearCollectiveSignature">🪑 Tout effacer</button>
       <button onclick="closeModal()">Fermer</button>
     </div>
   </div>
 
+  <!-- ======================= -->
+  <!-- Zone de signature visible formateur -->
+  <!-- ======================= -->
   <div id="formateurSignature" style="display: none; margin-top: 10px;"></div>
-
-  <!-- Bibliothèques -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>
