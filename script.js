@@ -11,31 +11,75 @@ function normalize(str) {
     .replace(/[^a-z0-9]/g, '');          // Supprime tout sauf lettres/chiffres
 }
 
-function attachSignatureButtons() {
-  const buttons = document.querySelectorAll('.sign-btn');
-  buttons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      const row = e.target.closest('tr');
-      currentRow = row;
-      document.getElementById('signatureModal').style.display = 'flex';
-      clearCanvas();
-    });
-  });
+// =======================
+// Initialisation du canvas de signature
+// =======================
+
+function initSignatureCanvas(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+
+  function getX(e) {
+    if (e.touches && e.touches.length > 0) {
+      return e.touches[0].clientX - canvas.getBoundingClientRect().left;
+    } else {
+      return e.clientX - canvas.getBoundingClientRect().left;
+    }
+  }
+
+  function getY(e) {
+    if (e.touches && e.touches.length > 0) {
+      return e.touches[0].clientY - canvas.getBoundingClientRect().top;
+    } else {
+      return e.clientY - canvas.getBoundingClientRect().top;
+    }
+  }
+
+  function startDrawing(e) {
+    e.preventDefault();
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(getX(e), getY(e));
+  }
+
+  function draw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    ctx.lineTo(getX(e), getY(e));
+    ctx.stroke();
+  }
+
+  function stopDrawing(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    drawing = false;
+  }
+
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing);
+
+  canvas.addEventListener('touchstart', startDrawing);
+  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchend', stopDrawing);
 }
 
-function clearCanvas() {
-  const canvas = document.getElementById('signatureCanvas');
+// =======================
+// Effacement du canvas
+// =======================
+
+function clearCanvas(canvasId) {
+  const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function closeModal() {
-  document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
 }
 
 // =======================
 // Importation fichier Excel
 // =======================
+
 document.getElementById('excelFile').addEventListener('change', function (e) {
   const file = e.target.files[0];
   if (!file) {
@@ -151,6 +195,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 // =======================
 // Ajout d’un stagiaire manuellement
 // =======================
+
 document.getElementById('addStagiaireBtn').addEventListener('click', () => {
   addStagiaireRow();
 });
@@ -176,10 +221,25 @@ function addStagiaireRow(stagiaire = '', email = '') {
 // =======================
 // Gestion des signatures
 // =======================
+
 let currentRow = null;
 
+function attachSignatureButtons() {
+  const buttons = document.querySelectorAll('.sign-btn');
+  buttons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      currentRow = row;
+      document.getElementById('signatureModal').style.display = 'flex';
+      clearCanvas('signatureCanvas');
+      initSignatureCanvas('signatureCanvas');
+    });
+  });
+}
+
 document.getElementById('saveSignature').addEventListener('click', () => {
-  const dataURL = signatureCanvas.toDataURL();
+  const canvas = document.getElementById('signatureCanvas');
+  const dataURL = canvas.toDataURL();
   const cell = currentRow.querySelector('.signature-stagiaire');
   cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
   closeModal();
@@ -188,29 +248,17 @@ document.getElementById('saveSignature').addEventListener('click', () => {
 
 document.getElementById('formateurSignBtn').addEventListener('click', () => {
   document.getElementById('formateurSignatureModal').style.display = 'flex';
-  clearCanvas();
+  clearCanvas('formateurCanvas');
+  initSignatureCanvas('formateurCanvas');
 });
 
-document.getElementById('saveFormateurSignature').addEventListener('click', () => {
-  const dataURL = formateurCanvas.toDataURL();
-  const cell = document.getElementById('formateurSignature');
-  cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
-  closeModal();
-});
 
-function updateFormateurButtonState() {
-  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
-  const allSigned = Array.from(rows).every(row => {
-    const present = row.querySelector('.presence-checkbox')?.checked;
-    const signature = row.querySelector('.signature-stagiaire')?.innerHTML.trim();
-    return !present || (signature && signature !== '');
-  });
-  document.getElementById('formateurSignBtn').disabled = !allSigned;
-}
-
+::contentReference[oaicite:25]{index=25}
+ 
 // =======================
 // Exportation en PDF
 // =======================
+
 document.getElementById('exportPDF').addEventListener('click', exportPDF);
 
 async function exportPDF() {
@@ -229,6 +277,66 @@ async function exportPDF() {
 
   doc.setFontSize(12);
   doc.text(`Centre de formation : ${centre}`, 10, 10);
-  doc.text(`Formation
-::contentReference[oaicite:22]{index=22}
- 
+  doc.text(`Formation : ${formation}`, 10, 20);
+  doc.text(`Intitulé : ${intitule}`, 10, 30);
+  doc.text(`Entreprise : ${entreprise}`, 10, 40);
+  doc.text(`Adresse : ${adresse}`, 10, 50);
+  doc.text(`Formateur : ${formateur}`, 10, 60);
+  doc.text(`Date : ${date}`, 10, 70);
+  doc.text(`Horaire : ${horaire}`, 10, 80);
+
+  const rows = [];
+  document.querySelectorAll('#stagiairesTable tbody tr').forEach(tr => {
+    const stagiaire = tr.children[0].textContent;
+    const email = tr.children[1].textContent;
+    const present = tr.querySelector('.presence-checkbox').checked ? 'Oui' : 'Non';
+    const signatureCell = tr.querySelector('.signature-stagiaire');
+    const signatureImg = signatureCell.querySelector('img')?.src || null;
+    rows.push([stagiaire, email, present, signatureImg]);
+  });
+
+  const tableData = rows.map(row => row.slice(0, 3));
+  doc.autoTable({
+    head: [['Stagiaire', 'Email', 'Présent']],
+    body: tableData,
+    startY: 90,
+  });
+
+  let yOffset = doc.lastAutoTable.finalY + 10;
+  for (let i = 0; i < rows.length; i++) {
+    const [stagiaire, , , signatureImg] = rows[i];
+    if (signatureImg && signatureImg.startsWith("data:image")) {
+      const img = new Image();
+      img.src = signatureImg;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          const imgWidth = 40;
+          const imgHeight = (img.height * imgWidth) / img.width;
+          doc.addImage(signatureImg, 'PNG', 20, yOffset, imgWidth, imgHeight);
+          doc.text(stagiaire, 70, yOffset + imgHeight / 2);
+          yOffset += imgHeight + 10;
+          resolve();
+        };
+        img.onerror = resolve;
+      });
+    }
+  }
+
+  if (formateurSignature && formateurSignature.startsWith("data:image")) {
+    const img = new Image();
+    img.src = formateurSignature;
+    await new Promise((resolve) => {
+      img.onload = () => {
+        const imgWidth = 40;
+        const imgHeight = (img.height * imgWidth) / img.width;
+        doc.addImage(formateurSignature, 'PNG', 20, yOffset + 10, imgWidth, imgHeight);
+        doc.text("Signature du formateur", 70, yOffset + 10 + imgHeight / 2);
+        resolve();
+      };
+      img.onerror = resolve;
+    });
+  }
+
+  const nomFinal = nomFichier || `feuille-emargement-${date}`;
+  doc.save(`${nomFinal}.pdf`);
+}
