@@ -1,7 +1,6 @@
 // =======================
 // Fonctions utilitaires
 // =======================
-const normalize = str => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 function attachSignatureButtons() {
   const buttons = document.querySelectorAll('.sign-btn');
