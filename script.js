@@ -66,7 +66,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       nomFichier = infoMap['nomfichierpdf'] || '';
       cheminFichier = infoMap['cheminenregistrementpdf'] || '';
 
-    // === Lecture des en-têtes (ligne 16 = index 15) ===
+// === Lecture des en-têtes (ligne détectée dynamiquement) ===
 
 let headerRowIndex = -1;
 for (let i = 10; i < rows.length; i++) {
@@ -84,52 +84,46 @@ if (headerRowIndex === -1) {
 
 const headers = rows[headerRowIndex];
 headers[0] = 'Stagiaire'; // Sécurise au cas où le mot serait mal écrit
-const normalizedHeaders = headers.map(h => normalize(h));
-console.log("✅ Ligne d'en-tête trouvée (index " + headerRowIndex + ") :", headers);
-console.log("🔍 En-têtes normalisés :", normalizedHeaders);
 
-      
 if (!headers || headers.length < 2) {
-  console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne 16.");
+  console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne " + (headerRowIndex + 1));
   return;
 }
 
-// 🛠️ Correction ici : forcer l'intitulé de la première colonne
-headers[0] = 'Stagiaire';
+console.log("✅ Ligne d'en-tête trouvée (index " + headerRowIndex + ") :", headers);
 
-console.log("✅ En-têtes détectés :", headers);
-
-normalizedHeaders = headers.map(h => normalize(h));
+const normalizedHeaders = headers.map(h => normalize(h));
 console.log("🔍 En-têtes normalisés :", normalizedHeaders);
 
+// === Lecture des stagiaires (lignes après la ligne d'en-tête) ===
 
-    const stagiaires = rows.slice(headerRowIndex + 1);// Lignes 17 et +
-      const tbody = document.querySelector('#stagiairesTable tbody');
-      tbody.innerHTML = '';
+const stagiaires = rows.slice(headerRowIndex + 1);
+const tbody = document.querySelector('#stagiairesTable tbody');
+tbody.innerHTML = '';
 
-      stagiaires.forEach((row, index) => {
-        if (!row || row.length < 2 || !row[0]) {
-          console.warn(`⛔ Ligne ${index + 17} ignorée (vide ou incomplète) :`, row);
-          return;
-        }
+stagiaires.forEach((row, index) => {
+  if (!row || row.length < 2 || !row[0]) {
+    console.warn(`⛔ Ligne ${index + headerRowIndex + 2} ignorée (vide ou incomplète) :`, row);
+    return;
+  }
 
-        const stagiaire = {};
-        normalizedHeaders.forEach((header, i) => {
-          stagiaire[header] = row[i] || '';
-        });
+  const stagiaire = {};
+  normalizedHeaders.forEach((header, i) => {
+    stagiaire[header] = row[i] || '';
+  });
 
-        console.log(`📌 Stagiaire ligne ${index + 17} :`, stagiaire);
-        console.log("Clés disponibles :", Object.keys(stagiaire));
+  console.log(`📌 Stagiaire ligne ${index + headerRowIndex + 2} :`, stagiaire);
+  console.log("Clés disponibles :", Object.keys(stagiaire));
 
-        // Vérifie si le champ 'stagiaire' existe et est non vide
-        if (!stagiaire['stagiaire']) {
-          console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + 17}`);
-          return;
-        }
+  // Vérifie si le champ 'stagiaire' existe et est non vide
+  if (!stagiaire['stagiaire']) {
+    console.warn(`⚠️ Aucun nom de stagiaire détecté à la ligne ${index + headerRowIndex + 2}`);
+    return;
+  }
 
-        // Affiche le stagiaire dans le tableau HTML (nom + email uniquement ici)
-        addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
-      });
+  // Affiche le stagiaire dans le tableau HTML (nom + email uniquement ici)
+  addStagiaireRow(stagiaire['stagiaire'], stagiaire['email']);
+});
 
     } catch (error) {
       console.error("💥 Erreur pendant le traitement du fichier Excel :", error);
