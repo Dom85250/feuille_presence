@@ -67,7 +67,28 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
       cheminFichier = infoMap['cheminenregistrementpdf'] || '';
 
     // === Lecture des en-têtes (ligne 16 = index 15) ===
-const headers = rows[15];
+
+let headerRowIndex = -1;
+for (let i = 10; i < rows.length; i++) {
+  const row = rows[i];
+  if (row && row.some(cell => typeof cell === 'string' && normalize(cell).includes('stagiaire'))) {
+    headerRowIndex = i;
+    break;
+  }
+}
+
+if (headerRowIndex === -1) {
+  console.error("❌ Impossible de trouver la ligne d'en-tête des stagiaires.");
+  return;
+}
+
+const headers = rows[headerRowIndex];
+headers[0] = 'Stagiaire'; // Sécurise au cas où le mot serait mal écrit
+const normalizedHeaders = headers.map(h => normalize(h));
+console.log("✅ Ligne d'en-tête trouvée (index " + headerRowIndex + ") :", headers);
+console.log("🔍 En-têtes normalisés :", normalizedHeaders);
+
+      
 if (!headers || headers.length < 2) {
   console.error("⚠️ En-têtes des stagiaires absents ou incomplets en ligne 16.");
   return;
@@ -82,7 +103,7 @@ const normalizedHeaders = headers.map(h => normalize(h));
 console.log("🔍 En-têtes normalisés :", normalizedHeaders);
 
 
-      const stagiaires = rows.slice(16); // Lignes 17 et +
+    const stagiaires = rows.slice(headerRowIndex + 1);// Lignes 17 et +
       const tbody = document.querySelector('#stagiairesTable tbody');
       tbody.innerHTML = '';
 
