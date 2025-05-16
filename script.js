@@ -99,7 +99,7 @@ headers[0] = 'Stagiaire';
 
 console.log("✅ En-têtes détectés :", headers);
 
-const normalizedHeaders = headers.map(h => normalize(h));
+normalizedHeaders = headers.map(h => normalize(h));
 console.log("🔍 En-têtes normalisés :", normalizedHeaders);
 
 
