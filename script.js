@@ -7,9 +7,13 @@ function normalize(str) {
     .trim()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]/g, '');
 }
+
+// =======================
+// Initialisation du canvas de signature
+// =======================
 
 function initSignatureCanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
@@ -53,17 +57,29 @@ function initSignatureCanvas(canvasId) {
   canvas.addEventListener('touchend', stopDrawing);
 }
 
+// =======================
+// Effacement du canvas
+// =======================
+
 function clearCanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+// =======================
+// Fermeture des modales
+// =======================
+
 function closeModal() {
   document.getElementById('signatureModal').style.display = 'none';
   document.getElementById('formateurSignatureModal').style.display = 'none';
   document.getElementById('collectiveSignatureModal').style.display = 'none';
 }
+
+// =======================
+// Message de fin
+// =======================
 
 function afficherBoutonQuitter() {
   let message = document.getElementById('messageFin');
@@ -83,6 +99,10 @@ function afficherBoutonQuitter() {
   }
   message.style.display = 'block';
 }
+
+// =======================
+// Mise à jour du bouton formateur
+// =======================
 
 function updateFormateurButtonState() {
   const rows = document.querySelectorAll('#stagiairesTable tbody tr');
@@ -107,10 +127,39 @@ function updateFormateurButtonState() {
   }
 }
 
+// =======================
+// Variables de contexte
+// =======================
+
 let currentRow = null;
 let currentCollectiveSignatureTarget = null;
 
-// Ajout stagiaire manuel
+// =======================
+// Gestion des signatures stagiaires
+// =======================
+
+document.getElementById('saveSignature').addEventListener('click', () => {
+  const canvas = document.getElementById('signatureCanvas');
+  const dataURL = canvas.toDataURL();
+
+  if (currentCollectiveSignatureTarget) {
+    currentCollectiveSignatureTarget.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+    currentCollectiveSignatureTarget = null;
+    document.getElementById('signatureModal').style.display = 'none';
+    document.getElementById('collectiveSignatureModal').style.display = 'flex';
+  } else if (currentRow) {
+    const cell = currentRow.querySelector('.signature-stagiaire');
+    if (cell) {
+      cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
+      updateFormateurButtonState();
+    }
+    closeModal();
+  }
+});
+
+// =======================
+// Ajout manuel de stagiaires
+// =======================
 
 document.getElementById('addStagiaireBtn').addEventListener('click', () => {
   const tbody = document.querySelector('#stagiairesTable tbody');
@@ -130,88 +179,9 @@ document.getElementById('addStagiaireBtn').addEventListener('click', () => {
   updateFormateurButtonState();
 });
 
-// Activation affichage stagiaires seulement après clic sur Présentiel
-
-document.getElementById('signAllBtn').addEventListener('click', () => {
-  document.getElementById('signatureListContainer').style.display = 'none';
-  document.getElementById('collectiveSignatureModal').style.display = 'flex';
-});
-
-document.getElementById('signInPerson').addEventListener('click', () => {
-  const container = document.getElementById('signatureListContainer');
-  container.innerHTML = '';
-  container.style.display = 'grid';
-  container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
-  container.style.gap = '10px';
-
-  const rows = document.querySelectorAll('#stagiairesTable tbody tr');
-  rows.forEach(row => {
-    const nom = row.children[0].textContent;
-    const present = row.querySelector('.presence-checkbox')?.checked;
-
-    const bloc = document.createElement('div');
-    bloc.className = 'bloc-stagiaire';
-    bloc.style.border = '1px solid #ccc';
-    bloc.style.padding = '10px';
-    bloc.style.borderRadius = '6px';
-    bloc.style.background = '#f9f9f9';
-    bloc.style.textAlign = 'center';
-
-    const titre = document.createElement('p');
-    titre.innerHTML = `<strong>${nom}</strong>`;
-    bloc.appendChild(titre);
-
-    const signaturePreview = document.createElement('div');
-    signaturePreview.className = 'signature-preview';
-    signaturePreview.style.marginBottom = '5px';
-    bloc.appendChild(signaturePreview);
-
-    if (present) {
-      const btn = document.createElement('button');
-      btn.textContent = 'Signer';
-      btn.className = 'sign-btn-collective';
-    btn.onclick = () => {
-  currentCollectiveSignatureTarget = signaturePreview;
-
-  // Ferme la modale collective AVANT d'ouvrir la signature
-  document.getElementById('collectiveSignatureModal').style.display = 'none';
-
-  // Ouvre la modale de signature
-  document.getElementById('signatureModal').style.display = 'flex';
-  clearCanvas('signatureCanvas');
-  initSignatureCanvas('signatureCanvas');
-  document.getElementById('stagiaireName').textContent = nom;
-};
-
-      bloc.appendChild(btn);
-    } else {
-      signaturePreview.textContent = '❌ Absent';
-    }
-
-    container.appendChild(bloc);
-  });
-
-  container.style.display = 'grid';
-});
-
-document.getElementById('saveSignature').addEventListener('click', () => {
-  const canvas = document.getElementById('signatureCanvas');
-  const dataURL = canvas.toDataURL();
-
-  if (currentRow) {
-    const cell = currentRow.querySelector('.signature-stagiaire');
-    cell.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
-    currentRow = null;
-  }
-
-  if (currentCollectiveSignatureTarget) {
-    currentCollectiveSignatureTarget.innerHTML = `<img src="${dataURL}" alt="Signature" style="max-width:100px;" />`;
-    currentCollectiveSignatureTarget = null;
-  }
-
-  closeModal();
-  updateFormateurButtonState();
-});
+// =======================
+// Gestion de la signature du formateur
+// =======================
 
 document.getElementById('formateurSignBtn').addEventListener('click', () => {
   document.getElementById('formateurSignatureModal').style.display = 'flex';
@@ -230,9 +200,14 @@ document.getElementById('saveFormateurSignature').addEventListener('click', () =
   afficherBoutonQuitter();
 });
 
+// =======================
+// Importation des stagiaires depuis Excel
+// =======================
+
 document.getElementById('excelFile').addEventListener('change', function (e) {
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = function (event) {
     try {
@@ -262,6 +237,7 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
 
       const tbody = document.querySelector('#stagiairesTable tbody');
       tbody.innerHTML = '';
+
       stagiaires.forEach(row => {
         if (!row || row.length < 2 || !row[0]) return;
         const data = {};
@@ -288,6 +264,10 @@ document.getElementById('excelFile').addEventListener('change', function (e) {
   };
   reader.readAsArrayBuffer(file);
 });
+
+// =======================
+// Association des boutons Signer aux lignes
+// =======================
 
 function attachSignatureButtons() {
   document.querySelectorAll('.sign-btn').forEach(button => {
