@@ -6,22 +6,25 @@ function normalize(str) {
 }
 
 // =======================
-// Initialisation du canvas de signature (compatible souris + tactile)
+// Initialisation du canvas de signature (compatible tactile & souris)
 // =======================
 function initSignatureCanvas(canvasId) {
-  const canvas = document.getElementById(canvasId);
-  const ctx = canvas.getContext('2d');
+  const oldCanvas = document.getElementById(canvasId);
+  const newCanvas = oldCanvas.cloneNode(true);
+  oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
 
-  // Assure un fond blanc (important pour certaines versions PDF ou export)
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const ctx = newCanvas.getContext('2d');
+
+  // Fond blanc pour éviter fond transparent
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
 
   ctx.strokeStyle = '#000';
   ctx.lineWidth = 2;
   let drawing = false;
 
   function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
+    const rect = newCanvas.getBoundingClientRect();
     const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
     const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
     return { x, y };
@@ -49,11 +52,6 @@ function initSignatureCanvas(canvasId) {
     drawing = false;
   }
 
-  // Supprime les anciens écouteurs éventuels (évite les doublons si init plusieurs fois)
-  canvas.replaceWith(canvas.cloneNode(true));
-  const newCanvas = document.getElementById(canvasId);
-
-  // Ré-attache les événements
   newCanvas.addEventListener('mousedown', start);
   newCanvas.addEventListener('mousemove', move);
   newCanvas.addEventListener('mouseup', end);
